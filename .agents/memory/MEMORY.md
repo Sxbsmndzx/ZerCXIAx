@@ -1,0 +1,2 @@
+- [OpenAI client setup](openai-client-setup.md) — use OPENAI_API_KEY directly; all three client files (chat, image, audio) must be patched away from AI_INTEGRATIONS_* vars.
+- [Accent color system](accent-color-system.md) — colors stored as HSL strings (e.g. "187 100% 42%"), applied via --onyx-accent CSS var; ThemeContext applies it globally so it works on all pages, not just SettingsPage.

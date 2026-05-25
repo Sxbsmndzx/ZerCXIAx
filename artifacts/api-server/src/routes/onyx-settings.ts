@@ -34,7 +34,7 @@ router.get("/settings", async (req, res): Promise<void> => {
     const [created] = await db.insert(onyxUserSettingsTable).values({
       userId,
       theme: "system",
-      accentColor: "cyan",
+      accentColor: "187 100% 42%",
       language: "es",
       voiceModeEnabled: false,
       dataTrainingEnabled: true,

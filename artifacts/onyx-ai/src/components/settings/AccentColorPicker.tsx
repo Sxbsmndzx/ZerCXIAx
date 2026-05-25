@@ -1,23 +1,19 @@
 import { useTheme } from "../../contexts/ThemeContext";
 import { Label } from "@/components/ui/label";
 import { Check } from "lucide-react";
-import { useEffect } from "react";
 
 const ACCENT_COLORS = [
-  { name: "Cyan", value: "187 100% 42%" }, // #00BCD4
-  { name: "Purple", value: "271 91% 65%" },
-  { name: "Green", value: "142 71% 45%" },
-  { name: "Orange", value: "24 95% 53%" },
-  { name: "Rose", value: "346 87% 61%" }
+  { name: "Cyan", value: "187 100% 42%" },
+  { name: "Violeta", value: "271 91% 65%" },
+  { name: "Verde", value: "142 71% 45%" },
+  { name: "Naranja", value: "24 95% 53%" },
+  { name: "Rosa", value: "346 87% 61%" },
+  { name: "Azul", value: "220 90% 56%" },
+  { name: "Amarillo", value: "48 96% 53%" },
 ];
 
 export function AccentColorPicker() {
   const { accentColor, setAccentColor } = useTheme();
-
-  // Apply the CSS variable to the root element when it changes
-  useEffect(() => {
-    document.documentElement.style.setProperty('--onyx-accent', accentColor);
-  }, [accentColor]);
 
   return (
     <div className="space-y-3">
@@ -31,7 +27,9 @@ export function AccentColorPicker() {
             style={{ backgroundColor: `hsl(${color.value})` }}
             title={color.name}
           >
-            {accentColor === color.value && <Check className="w-5 h-5 text-white drop-shadow-md" />}
+            {accentColor === color.value && (
+              <Check className="w-5 h-5 text-white drop-shadow-md" />
+            )}
           </button>
         ))}
       </div>

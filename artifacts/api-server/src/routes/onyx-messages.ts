@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, and } from "drizzle-orm";
-import { db, onyxConversationsTable, onyxMessagesTable } from "@workspace/db";
+import { db, onyxConversationsTable, onyxMessagesTable, onyxUserSettingsTable } from "@workspace/db";
 import { SendMessageBody, SendMessageParams } from "@workspace/api-zod";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { activeSessions } from "./onyx-auth";
@@ -14,6 +14,14 @@ function getUserIdFromRequest(req: Parameters<Parameters<typeof router.post>[1]>
   const token = authHeader.slice(7);
   return activeSessions.get(token) ?? null;
 }
+
+const LANGUAGE_NAMES: Record<string, string> = {
+  es: "español",
+  en: "English",
+  pt: "Portuguese (português)",
+  fr: "French (français)",
+  de: "German (Deutsch)",
+};
 
 router.post("/conversations/:conversationId/messages", async (req, res): Promise<void> => {
   const userId = getUserIdFromRequest(req);
@@ -30,6 +38,11 @@ router.post("/conversations/:conversationId/messages", async (req, res): Promise
 
   if (!conv) { res.status(404).json({ error: "Conversación no encontrada" }); return; }
 
+  // Get user language preference
+  const [userSettings] = await db.select().from(onyxUserSettingsTable)
+    .where(eq(onyxUserSettingsTable.userId, userId));
+  const preferredLang = LANGUAGE_NAMES[userSettings?.language ?? "es"] ?? "español";
+
   const previousMessages = await db.select().from(onyxMessagesTable)
     .where(eq(onyxMessagesTable.conversationId, conv.id))
     .orderBy(onyxMessagesTable.createdAt);
@@ -43,9 +56,9 @@ router.post("/conversations/:conversationId/messages", async (req, res): Promise
   const chatMessages = [
     {
       role: "system" as const,
-      content: "Eres Onyx, un asistente de inteligencia artificial de próxima generación. Eres inteligente, útil, preciso y siempre respondes en el idioma que el usuario usa. Si el usuario habla en español, respondes en español. Sé conciso pero completo.",
+      content: `Eres Onyx, un asistente de inteligencia artificial avanzado. Eres inteligente, útil y preciso. El idioma preferido del usuario es ${preferredLang} — responde siempre en ese idioma a menos que el usuario escriba en otro idioma. Sé conciso pero completo en tus respuestas.`,
     },
-    ...previousMessages.map(m => ({
+    ...previousMessages.map((m) => ({
       role: m.role as "user" | "assistant",
       content: m.content,
     })),
