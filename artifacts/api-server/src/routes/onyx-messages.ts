@@ -15,12 +15,12 @@ function getUserIdFromRequest(req: Parameters<Parameters<typeof router.post>[1]>
   return activeSessions.get(token) ?? null;
 }
 
-const LANGUAGE_NAMES: Record<string, string> = {
-  es: "español",
-  en: "English",
-  pt: "Portuguese (português)",
-  fr: "French (français)",
-  de: "German (Deutsch)",
+const LANGUAGE_INSTRUCTIONS: Record<string, string> = {
+  es: "DEBES responder SIEMPRE en español, sin excepción. Nunca respondas en otro idioma.",
+  en: "You MUST respond ONLY in English, without exception. Never respond in Spanish or any other language, even if the user writes in another language.",
+  pt: "VOCÊ DEVE responder SEMPRE em português, sem exceção. Nunca responda em outro idioma.",
+  fr: "Vous DEVEZ répondre TOUJOURS en français, sans exception. Ne répondez jamais dans une autre langue.",
+  de: "Sie MÜSSEN IMMER auf Deutsch antworten, ohne Ausnahme. Antworten Sie niemals in einer anderen Sprache.",
 };
 
 router.post("/conversations/:conversationId/messages", async (req, res): Promise<void> => {
@@ -38,10 +38,11 @@ router.post("/conversations/:conversationId/messages", async (req, res): Promise
 
   if (!conv) { res.status(404).json({ error: "Conversación no encontrada" }); return; }
 
-  // Get user language preference
   const [userSettings] = await db.select().from(onyxUserSettingsTable)
     .where(eq(onyxUserSettingsTable.userId, userId));
-  const preferredLang = LANGUAGE_NAMES[userSettings?.language ?? "es"] ?? "español";
+
+  const langCode = userSettings?.language ?? "es";
+  const langInstruction = LANGUAGE_INSTRUCTIONS[langCode] ?? LANGUAGE_INSTRUCTIONS.es;
 
   const previousMessages = await db.select().from(onyxMessagesTable)
     .where(eq(onyxMessagesTable.conversationId, conv.id))
@@ -56,7 +57,7 @@ router.post("/conversations/:conversationId/messages", async (req, res): Promise
   const chatMessages = [
     {
       role: "system" as const,
-      content: `Eres Onyx, un asistente de inteligencia artificial avanzado. Eres inteligente, útil y preciso. El idioma preferido del usuario es ${preferredLang} — responde siempre en ese idioma a menos que el usuario escriba en otro idioma. Sé conciso pero completo en tus respuestas.`,
+      content: `Eres Onyx, un asistente de inteligencia artificial avanzado, inteligente y preciso. ${langInstruction} Sé conciso pero completo en tus respuestas.`,
     },
     ...previousMessages.map((m) => ({
       role: m.role as "user" | "assistant",

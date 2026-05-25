@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "../hooks/useTranslation";
 
 const registerSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
@@ -27,14 +28,11 @@ export default function RegisterPage() {
   const [, setLocation] = useLocation();
   const { login } = useAuth();
   const { toast } = useToast();
-  
+  const { t } = useTranslation();
+
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      password: "",
-    },
+    defaultValues: { name: "", email: "", password: "" },
   });
 
   const registerMutation = useRegisterUser({
@@ -46,11 +44,11 @@ export default function RegisterPage() {
       onError: (error) => {
         toast({
           variant: "destructive",
-          title: "Error al crear cuenta",
-          description: error.data?.error || "Ocurrió un error. Por favor, intenta de nuevo.",
+          title: t("errorTitle"),
+          description: (error as any).data?.error || "Ocurrió un error. Por favor, intenta de nuevo.",
         });
-      }
-    }
+      },
+    },
   });
 
   const onSubmit = (values: z.infer<typeof registerSchema>) => {
@@ -62,19 +60,19 @@ export default function RegisterPage() {
       <div className="w-full max-w-md space-y-8">
         <div className="flex flex-col items-center text-center">
           <OnyxLogo className="w-12 h-12 text-primary mb-6" />
-          <h1 className="text-3xl font-bold tracking-tight">Crear cuenta</h1>
-          <p className="text-muted-foreground mt-2">Únete a Onyx hoy mismo</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t("createAccount")}</h1>
+          <p className="text-muted-foreground mt-2">{t("joinOnyx")}</p>
         </div>
 
         <div className="bg-card border border-border rounded-xl p-8 shadow-sm">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
               <FormField
                 control={form.control}
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nombre completo</FormLabel>
+                    <FormLabel>{t("fullName")}</FormLabel>
                     <FormControl>
                       <Input placeholder="Tu nombre" {...field} disabled={registerMutation.isPending} />
                     </FormControl>
@@ -87,7 +85,7 @@ export default function RegisterPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Correo electrónico</FormLabel>
+                    <FormLabel>{t("emailLabel")}</FormLabel>
                     <FormControl>
                       <Input placeholder="tu@email.com" type="email" {...field} disabled={registerMutation.isPending} />
                     </FormControl>
@@ -100,25 +98,33 @@ export default function RegisterPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Contraseña</FormLabel>
+                    <FormLabel>{t("passwordLabel")}</FormLabel>
                     <FormControl>
-                      <Input type="password" {...field} disabled={registerMutation.isPending} />
+                      <Input type="password" placeholder="Mínimo 6 caracteres" {...field} disabled={registerMutation.isPending} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
               <Button type="submit" className="w-full" disabled={registerMutation.isPending}>
-                {registerMutation.isPending ? "Creando cuenta..." : "Crear cuenta"}
+                {registerMutation.isPending ? t("creatingAccount") : t("createAccount")}
               </Button>
             </form>
           </Form>
 
-          <div className="mt-6 text-center text-sm text-muted-foreground">
-            ¿Ya tienes cuenta?{" "}
-            <Link href="/" className="text-primary hover:underline font-medium">
-              Iniciar Sesión
-            </Link>
+          <div className="mt-5 text-center text-xs text-muted-foreground space-y-2">
+            <p>
+              {t("acceptTerms")}{" "}
+              <Link href="/terminos" className="text-primary hover:underline font-medium">
+                {t("termsAndConditions")}
+              </Link>
+            </p>
+            <p className="text-sm">
+              {t("alreadyAccount")}{" "}
+              <Link href="/" className="text-primary hover:underline font-medium">
+                {t("signIn")}
+              </Link>
+            </p>
           </div>
         </div>
       </div>

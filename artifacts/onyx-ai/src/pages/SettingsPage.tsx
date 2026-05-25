@@ -7,17 +7,21 @@ import { AccentColorPicker } from "../components/settings/AccentColorPicker";
 import { LanguageSelector } from "../components/settings/LanguageSelector";
 import { UserAvatarBadge } from "../components/common/UserAvatarBadge";
 import { ReportErrorDialog } from "../components/common/ReportErrorDialog";
+import { SecurityDialog } from "../components/common/SecurityDialog";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { LogOut, Shield, Mic, Database, AlertTriangle } from "lucide-react";
+import { LogOut, Shield, Mic, Database, AlertTriangle, FileText, ChevronRight } from "lucide-react";
 import { useLogoutUser, useUpdateSettings, useGetSettings } from "@workspace/api-client-react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
+import { useTranslation } from "../hooks/useTranslation";
 
 export default function SettingsPage() {
   const { user, logout } = useAuth();
   const [, setLocation] = useLocation();
   const [reportOpen, setReportOpen] = useState(false);
+  const [securityOpen, setSecurityOpen] = useState(false);
+  const { t } = useTranslation();
   useAuthGuard();
 
   const logoutMutation = useLogoutUser({
@@ -50,133 +54,144 @@ export default function SettingsPage() {
 
   return (
     <AppLayout>
-      <div className="h-full overflow-y-auto px-4 py-8 md:px-12 lg:px-24">
-        <div className="max-w-2xl mx-auto space-y-10">
+      <div className="h-full overflow-y-auto">
+        <div className="max-w-2xl mx-auto px-4 py-8 md:px-8 space-y-8">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight mb-2">Configuración</h1>
-            <p className="text-muted-foreground">Administra tus preferencias y la apariencia de Onyx.</p>
+            <h1 className="text-2xl font-bold tracking-tight">{t("configuration")}</h1>
+            <p className="text-muted-foreground text-sm mt-1">Administra tus preferencias y la apariencia de Onyx.</p>
           </div>
 
           {/* Profile Summary */}
-          <div className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border">
-            <UserAvatarBadge user={user} className="w-16 h-16 text-lg border-2 border-primary/20" />
-            <div>
-              <h2 className="text-xl font-semibold text-foreground">{user.name}</h2>
-              <p className="text-sm text-muted-foreground">{user.email}</p>
-              <div className="mt-1">
-                <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                  Plan {user.plan}
-                </span>
-              </div>
+          <div className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border">
+            <UserAvatarBadge user={user} className="w-14 h-14 text-base border-2 border-primary/20 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <h2 className="font-semibold text-foreground truncate">{user.name}</h2>
+              <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+              <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary mt-1">
+                Plan {user.plan}
+              </span>
             </div>
-            <div className="ml-auto">
-              <Button variant="outline" size="sm" onClick={() => setLocation("/perfil")}>
-                Editar perfil
-              </Button>
-            </div>
+            <Button variant="outline" size="sm" onClick={() => setLocation("/perfil")} className="flex-shrink-0">
+              {t("editProfile")}
+            </Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
-            {/* Aspecto */}
-            <section className="space-y-6">
-              <h3 className="text-lg font-medium border-b border-border pb-2">Aspecto</h3>
-              <ThemeSelector />
-              <AccentColorPicker />
-            </section>
+          {/* Aspecto */}
+          <section className="space-y-5">
+            <h3 className="text-base font-semibold border-b border-border pb-2">{t("appearance")}</h3>
+            <ThemeSelector />
+            <AccentColorPicker />
+          </section>
 
-            {/* General */}
-            <section className="space-y-6">
-              <h3 className="text-lg font-medium border-b border-border pb-2">General</h3>
-              <LanguageSelector />
+          {/* General */}
+          <section className="space-y-5">
+            <h3 className="text-base font-semibold border-b border-border pb-2">{t("general")}</h3>
+            <LanguageSelector />
 
-              <div className="flex items-center justify-between pt-2">
-                <div className="space-y-0.5">
-                  <Label className="flex items-center gap-2">
-                    <Mic className="w-4 h-4 text-muted-foreground" />
-                    Modo de voz
-                  </Label>
-                  <p className="text-xs text-muted-foreground">Activar entrada por voz en el chat</p>
-                </div>
-                <Switch
-                  checked={settings?.voiceModeEnabled ?? false}
-                  onCheckedChange={handleVoiceToggle}
-                  disabled={updateSettingsMutation.isPending}
-                />
-              </div>
-            </section>
-
-            {/* Privacidad y Datos */}
-            <section className="space-y-6 md:col-span-2">
-              <h3 className="text-lg font-medium border-b border-border pb-2">Privacidad y Datos</h3>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label className="flex items-center gap-2">
-                    <Database className="w-4 h-4 text-muted-foreground" />
-                    Datos para entrenamiento
-                  </Label>
-                  <p className="text-sm text-muted-foreground">
-                    Permitir que tus conversaciones se usen para mejorar el modelo
-                  </p>
-                </div>
-                <Switch
-                  checked={settings?.dataTrainingEnabled ?? false}
-                  onCheckedChange={handleDataToggle}
-                  disabled={updateSettingsMutation.isPending}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label className="flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-muted-foreground" />
-                    Seguridad de la cuenta
-                  </Label>
-                  <p className="text-sm text-muted-foreground">Administra tus dispositivos y sesiones activas</p>
-                </div>
-                <Button variant="outline" size="sm">
-                  Administrar
-                </Button>
-              </div>
-            </section>
-          </div>
-
-          {/* Soporte */}
-          <section className="space-y-4">
-            <h3 className="text-lg font-medium border-b border-border pb-2">Soporte</h3>
-            <div className="flex items-center justify-between p-4 rounded-xl bg-card border border-border">
-              <div className="space-y-0.5">
-                <Label className="flex items-center gap-2 text-base">
-                  <AlertTriangle className="w-4 h-4 text-destructive/70" />
-                  Informar un error
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5 flex-1 min-w-0 pr-4">
+                <Label className="flex items-center gap-2 text-sm font-medium">
+                  <Mic className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  {t("voiceMode")}
                 </Label>
-                <p className="text-sm text-muted-foreground">
-                  ¿Algo no funciona? Envíanos un reporte a <span className="text-primary font-medium">Onyxaisupport@gmail.com</span>
-                </p>
+                <p className="text-xs text-muted-foreground">{t("voiceModeDesc")}</p>
               </div>
-              <Button variant="outline" size="sm" onClick={() => setReportOpen(true)} className="gap-2 ml-4 flex-shrink-0">
-                <AlertTriangle className="w-4 h-4 text-destructive/70" />
-                Informar
-              </Button>
+              <Switch
+                checked={settings?.voiceModeEnabled ?? false}
+                onCheckedChange={handleVoiceToggle}
+                disabled={updateSettingsMutation.isPending}
+              />
             </div>
           </section>
 
+          {/* Privacidad y Datos */}
+          <section className="space-y-4">
+            <h3 className="text-base font-semibold border-b border-border pb-2">{t("privacy")}</h3>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5 flex-1 min-w-0 pr-4">
+                <Label className="flex items-center gap-2 text-sm font-medium">
+                  <Database className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  {t("trainingData")}
+                </Label>
+                <p className="text-xs text-muted-foreground">{t("trainingDataDesc")}</p>
+              </div>
+              <Switch
+                checked={settings?.dataTrainingEnabled ?? false}
+                onCheckedChange={handleDataToggle}
+                disabled={updateSettingsMutation.isPending}
+              />
+            </div>
+          </section>
+
+          {/* Seguridad */}
+          <section className="space-y-4">
+            <h3 className="text-base font-semibold border-b border-border pb-2">{t("security")}</h3>
+
+            <button
+              onClick={() => setSecurityOpen(true)}
+              className="w-full flex items-center gap-3 p-4 rounded-xl bg-card border border-border hover:bg-secondary/50 transition-colors text-left"
+            >
+              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Shield className="w-4 h-4 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium">{t("changePassword")}</div>
+                <div className="text-xs text-muted-foreground">{t("securityDesc")}</div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            </button>
+          </section>
+
+          {/* Soporte */}
+          <section className="space-y-4">
+            <h3 className="text-base font-semibold border-b border-border pb-2">{t("support")}</h3>
+
+            <button
+              onClick={() => setReportOpen(true)}
+              className="w-full flex items-center gap-3 p-4 rounded-xl bg-card border border-border hover:bg-secondary/50 transition-colors text-left"
+            >
+              <div className="w-9 h-9 rounded-lg bg-destructive/10 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-4 h-4 text-destructive" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium">{t("reportError")}</div>
+                <div className="text-xs text-muted-foreground">{t("reportErrorDesc")}</div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            </button>
+
+            <Link href="/terminos">
+              <button className="w-full flex items-center gap-3 p-4 rounded-xl bg-card border border-border hover:bg-secondary/50 transition-colors text-left">
+                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <FileText className="w-4 h-4 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium">{t("termsAndConditions")}</div>
+                  <div className="text-xs text-muted-foreground">{t("termsDesc")}</div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+              </button>
+            </Link>
+          </section>
+
           {/* Logout */}
-          <div className="pt-4 border-t border-border/50">
+          <div className="pb-8">
             <Button
               variant="destructive"
-              className="w-full sm:w-auto gap-2"
+              className="w-full gap-2"
               onClick={() => logoutMutation.mutate()}
               disabled={logoutMutation.isPending}
             >
               <LogOut className="w-4 h-4" />
-              {logoutMutation.isPending ? "Cerrando sesión..." : "Cerrar sesión"}
+              {logoutMutation.isPending ? t("loggingOut") : t("logout")}
             </Button>
           </div>
         </div>
       </div>
 
       <ReportErrorDialog open={reportOpen} onOpenChange={setReportOpen} />
+      <SecurityDialog open={securityOpen} onOpenChange={setSecurityOpen} />
     </AppLayout>
   );
 }

@@ -14,6 +14,7 @@ import ConversationPage from "./pages/ConversationPage";
 import HistoryPage from "./pages/HistoryPage";
 import SettingsPage from "./pages/SettingsPage";
 import ProfilePage from "./pages/ProfilePage";
+import TermsPage from "./pages/TermsPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,6 +35,7 @@ function Router() {
       <Route path="/historial" component={HistoryPage} />
       <Route path="/configuracion" component={SettingsPage} />
       <Route path="/perfil" component={ProfilePage} />
+      <Route path="/terminos" component={TermsPage} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -32,6 +32,13 @@ function generateToken(userId: number): string {
 
 const activeSessions = new Map<string, number>();
 
+function getUserIdFromRequest(req: { headers: { authorization?: string } }): number | null {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith("Bearer ")) return null;
+  const token = authHeader.slice(7);
+  return activeSessions.get(token) ?? null;
+}
+
 router.post("/auth/register", async (req, res): Promise<void> => {
   const parsed = RegisterUserBody.safeParse(req.body);
   if (!parsed.success) {
@@ -61,7 +68,7 @@ router.post("/auth/register", async (req, res): Promise<void> => {
   await db.insert(onyxUserSettingsTable).values({
     userId: user.id,
     theme: "system",
-    accentColor: "cyan",
+    accentColor: "187 100% 42%",
     language: "es",
     voiceModeEnabled: false,
     dataTrainingEnabled: true,
@@ -109,16 +116,9 @@ router.post("/auth/logout", async (req, res): Promise<void> => {
 });
 
 router.get("/auth/me", async (req, res): Promise<void> => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith("Bearer ")) {
-    res.status(401).json({ error: "No autenticado" });
-    return;
-  }
-
-  const token = authHeader.slice(7);
-  const userId = activeSessions.get(token);
+  const userId = getUserIdFromRequest(req);
   if (!userId) {
-    res.status(401).json({ error: "Token inválido o expirado" });
+    res.status(401).json({ error: "No autenticado o token inválido" });
     return;
   }
 
@@ -132,16 +132,9 @@ router.get("/auth/me", async (req, res): Promise<void> => {
 });
 
 router.patch("/auth/me/profile", async (req, res): Promise<void> => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith("Bearer ")) {
-    res.status(401).json({ error: "No autenticado" });
-    return;
-  }
-
-  const token = authHeader.slice(7);
-  const userId = activeSessions.get(token);
+  const userId = getUserIdFromRequest(req);
   if (!userId) {
-    res.status(401).json({ error: "Token inválido" });
+    res.status(401).json({ error: "No autenticado" });
     return;
   }
 
@@ -161,6 +154,44 @@ router.patch("/auth/me/profile", async (req, res): Promise<void> => {
     .returning();
 
   res.json(userToResponse(user));
+});
+
+router.post("/auth/change-password", async (req, res): Promise<void> => {
+  const userId = getUserIdFromRequest(req);
+  if (!userId) {
+    res.status(401).json({ error: "No autenticado" });
+    return;
+  }
+
+  const { currentPassword, newPassword } = req.body as { currentPassword?: string; newPassword?: string };
+
+  if (!currentPassword || !newPassword) {
+    res.status(400).json({ error: "Se requieren la contraseña actual y la nueva contraseña" });
+    return;
+  }
+
+  if (newPassword.length < 6) {
+    res.status(400).json({ error: "La nueva contraseña debe tener al menos 6 caracteres" });
+    return;
+  }
+
+  const [user] = await db.select().from(onyxUsersTable).where(eq(onyxUsersTable.id, userId));
+  if (!user) {
+    res.status(404).json({ error: "Usuario no encontrado" });
+    return;
+  }
+
+  if (user.passwordHash !== hashPassword(currentPassword)) {
+    res.status(401).json({ error: "La contraseña actual es incorrecta" });
+    return;
+  }
+
+  await db.update(onyxUsersTable)
+    .set({ passwordHash: hashPassword(newPassword) })
+    .where(eq(onyxUsersTable.id, userId));
+
+  req.log.info({ userId }, "Password changed");
+  res.json({ success: true, message: "Contraseña actualizada correctamente" });
 });
 
 export { activeSessions };

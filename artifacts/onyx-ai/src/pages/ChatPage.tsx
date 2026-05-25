@@ -1,73 +1,90 @@
-import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { AppLayout } from "../components/layout/AppLayout";
 import { useAuthGuard } from "../hooks/useAuthGuard";
 import { Button } from "@/components/ui/button";
 import { OnyxLogo } from "../components/common/OnyxLogo";
-import { Image, PenTool, Search } from "lucide-react";
+import { Image, PenTool, Search, Sparkles } from "lucide-react";
 import { useCreateConversation } from "@workspace/api-client-react";
 import { ChatInputBar } from "../components/chat/ChatInputBar";
+import { useTranslation } from "../hooks/useTranslation";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function ChatPage() {
   const { user } = useAuthGuard();
+  const { user: authUser } = useAuth();
   const [, setLocation] = useLocation();
+  const { t } = useTranslation();
 
   const createMutation = useCreateConversation({
     mutation: {
       onSuccess: (data) => {
         setLocation(`/chat/${data.id}`);
-      }
-    }
+      },
+    },
   });
 
   const handleSendMessage = (content: string) => {
-    // Actually in an empty state, this should create a conversation and maybe send the message
-    // The API might expect creating first
-    createMutation.mutate({ data: { title: content.substring(0, 40) } }, {
-      onSuccess: (data) => {
-        // Just redirect, ConversationPage will handle sending the message if we passed it in URL state or similar, 
-        // but for simplicity let's redirect to empty conversation and user can type again, or better yet,
-        // we should create the conversation with an initial message. But the API has a separate sendMessage endpoint.
-        // Let's redirect with the content as a hash/query param or just redirect.
-        setLocation(`/chat/${data.id}?q=${encodeURIComponent(content)}`);
+    createMutation.mutate(
+      { data: { title: content.substring(0, 50) } },
+      {
+        onSuccess: (data) => {
+          setLocation(`/chat/${data.id}?q=${encodeURIComponent(content)}`);
+        },
       }
-    });
+    );
   };
 
   const suggestionChips = [
-    { icon: Image, text: "Crea una imagen" },
-    { icon: PenTool, text: "Escribe o edita" },
-    { icon: Search, text: "Busca información" },
+    { icon: Image, text: t("createImage") },
+    { icon: PenTool, text: t("writeOrEdit") },
+    { icon: Search, text: t("searchInfo") },
   ];
 
   if (!user) return null;
 
+  const firstName = authUser?.name?.split(" ")[0] || "Usuario";
+
   return (
     <AppLayout>
-      <div className="flex flex-col h-full items-center justify-center relative">
-        <div className="flex-1 w-full flex flex-col items-center justify-center p-4 max-w-3xl mx-auto text-center">
-          <OnyxLogo className="w-16 h-16 text-primary/80 mb-6" />
-          <h2 className="text-2xl font-medium mb-8 text-foreground">¿En qué puedo ayudarte hoy?</h2>
-          
-          <div className="flex flex-wrap justify-center gap-3 w-full">
+      <div className="flex flex-col h-full">
+        <div className="flex-1 flex flex-col items-center justify-center p-6 max-w-3xl mx-auto w-full text-center">
+          <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-6">
+            <OnyxLogo className="w-8 h-8 text-primary" />
+          </div>
+
+          <h2 className="text-2xl font-semibold mb-1">
+            {t("helpText")}
+          </h2>
+          <p className="text-muted-foreground text-sm mb-8">
+            Hola, <span className="text-foreground font-medium">{firstName}</span>. Estoy aquí para ayudarte.
+          </p>
+
+          <div className="flex flex-wrap justify-center gap-2 w-full">
             {suggestionChips.map((chip, idx) => (
-              <Button 
-                key={idx} 
-                variant="outline" 
-                className="bg-card hover:bg-secondary border-border rounded-full py-6 px-6 gap-3 shadow-sm hover:shadow-md transition-all"
+              <Button
+                key={idx}
+                variant="outline"
+                className="bg-card hover:bg-secondary border-border rounded-xl py-5 px-5 gap-2.5 shadow-sm hover:shadow transition-all"
                 onClick={() => handleSendMessage(chip.text)}
                 disabled={createMutation.isPending}
               >
-                <chip.icon className="w-5 h-5 text-primary" />
-                <span className="text-base font-normal">{chip.text}</span>
+                <chip.icon className="w-4 h-4 text-primary" />
+                <span className="text-sm font-normal">{chip.text}</span>
               </Button>
             ))}
+            <Button
+              variant="outline"
+              className="bg-card hover:bg-secondary border-border rounded-xl py-5 px-5 gap-2.5 shadow-sm hover:shadow transition-all"
+              onClick={() => handleSendMessage("Sorpréndeme con algo interesante")}
+              disabled={createMutation.isPending}
+            >
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span className="text-sm font-normal">Sorpréndeme</span>
+            </Button>
           </div>
         </div>
-        
-        <div className="w-full">
-          <ChatInputBar onSendMessage={handleSendMessage} isLoading={createMutation.isPending} />
-        </div>
+
+        <ChatInputBar onSendMessage={handleSendMessage} isLoading={createMutation.isPending} />
       </div>
     </AppLayout>
   );

@@ -1,13 +1,14 @@
 import { useState } from "react";
-import { Plus, Settings, X, History, User as UserIcon, AlertTriangle } from "lucide-react";
+import { Plus, Settings, X, History, User as UserIcon, AlertTriangle, FileText } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { useListConversations, useCreateConversation } from "@workspace/api-client-react";
+import { useListConversations } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { ConversationListItem } from "./ConversationListItem";
 import { OnyxLogo } from "../common/OnyxLogo";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { ReportErrorDialog } from "../common/ReportErrorDialog";
+import { useTranslation } from "../../hooks/useTranslation";
 
 interface ChatSidebarProps {
   onClose?: () => void;
@@ -16,15 +17,8 @@ interface ChatSidebarProps {
 export function ChatSidebar({ onClose }: ChatSidebarProps) {
   const [location, setLocation] = useLocation();
   const [reportOpen, setReportOpen] = useState(false);
+  const { t } = useTranslation();
   const { data: conversations, isLoading } = useListConversations();
-  const createMutation = useCreateConversation({
-    mutation: {
-      onSuccess: (data) => {
-        setLocation(`/chat/${data.id}`);
-        if (onClose) onClose();
-      },
-    },
-  });
 
   const handleNewChat = () => {
     setLocation("/chat");
@@ -33,7 +27,7 @@ export function ChatSidebar({ onClose }: ChatSidebarProps) {
 
   const activeId = location.startsWith("/chat/") ? parseInt(location.split("/").pop() || "0") : null;
 
-  // Group conversations by date
+  // Group by date
   const today: typeof conversations = [];
   const yesterday: typeof conversations = [];
   const older: typeof conversations = [];
@@ -71,6 +65,18 @@ export function ChatSidebar({ onClose }: ChatSidebarProps) {
     );
   };
 
+  const navItem = (href: string, icon: React.ReactNode, label: string) => (
+    <Link href={href} onClick={onClose}>
+      <Button
+        variant="ghost"
+        className={`w-full justify-start gap-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${location === href ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""}`}
+      >
+        {icon}
+        {label}
+      </Button>
+    </Link>
+  );
+
   return (
     <>
       <div className="flex flex-col h-full bg-sidebar border-r border-sidebar-border w-full">
@@ -89,34 +95,34 @@ export function ChatSidebar({ onClose }: ChatSidebarProps) {
           )}
         </div>
 
-        {/* New Chat Button */}
+        {/* New Chat */}
         <div className="px-3 pb-3">
           <Button
             onClick={handleNewChat}
             className="w-full justify-start gap-2 bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90"
           >
             <Plus className="w-4 h-4" />
-            Nueva conversación
+            {t("newConversation")}
           </Button>
         </div>
 
         {/* Conversations */}
         <ScrollArea className="flex-1 px-3">
           {isLoading ? (
-            <div className="space-y-2 px-2 mt-2">
-              <div className="h-8 bg-sidebar-accent/50 animate-pulse rounded-md" />
-              <div className="h-8 bg-sidebar-accent/50 animate-pulse rounded-md" />
-              <div className="h-8 bg-sidebar-accent/50 animate-pulse rounded-md" />
+            <div className="space-y-1.5 pt-1">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="h-8 bg-sidebar-accent/40 animate-pulse rounded-md" />
+              ))}
             </div>
           ) : conversations && conversations.length > 0 ? (
             <div className="pb-4 pt-1">
-              {renderGroup("Hoy", today)}
-              {renderGroup("Ayer", yesterday)}
-              {renderGroup("Anteriores", older)}
+              {renderGroup(t("today"), today)}
+              {renderGroup(t("yesterday"), yesterday)}
+              {renderGroup(t("older"), older)}
             </div>
           ) : (
-            <div className="text-sm text-sidebar-foreground/50 px-2 py-6 text-center">
-              No hay conversaciones aún
+            <div className="text-xs text-sidebar-foreground/50 px-2 py-6 text-center">
+              {t("noConversations")}
             </div>
           )}
         </ScrollArea>
@@ -124,41 +130,18 @@ export function ChatSidebar({ onClose }: ChatSidebarProps) {
         <Separator className="bg-sidebar-border" />
 
         {/* Bottom nav */}
-        <div className="p-3 space-y-1">
-          <Link href="/historial" onClick={onClose}>
-            <Button
-              variant="ghost"
-              className={`w-full justify-start gap-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${location === "/historial" ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""}`}
-            >
-              <History className="w-4 h-4" />
-              Historial completo
-            </Button>
-          </Link>
-          <Link href="/configuracion" onClick={onClose}>
-            <Button
-              variant="ghost"
-              className={`w-full justify-start gap-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${location === "/configuracion" ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""}`}
-            >
-              <Settings className="w-4 h-4" />
-              Configuración
-            </Button>
-          </Link>
-          <Link href="/perfil" onClick={onClose}>
-            <Button
-              variant="ghost"
-              className={`w-full justify-start gap-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${location === "/perfil" ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""}`}
-            >
-              <UserIcon className="w-4 h-4" />
-              Perfil
-            </Button>
-          </Link>
+        <div className="p-3 space-y-0.5">
+          {navItem("/historial", <History className="w-4 h-4" />, t("fullHistory"))}
+          {navItem("/configuracion", <Settings className="w-4 h-4" />, t("settings"))}
+          {navItem("/perfil", <UserIcon className="w-4 h-4" />, t("profile"))}
+          {navItem("/terminos", <FileText className="w-4 h-4" />, t("termsAndConditions"))}
           <Button
             variant="ghost"
             onClick={() => setReportOpen(true)}
-            className="w-full justify-start gap-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            className="w-full justify-start gap-2 text-destructive/70 hover:text-destructive hover:bg-destructive/10"
           >
-            <AlertTriangle className="w-4 h-4 text-destructive/70" />
-            Informar error
+            <AlertTriangle className="w-4 h-4" />
+            {t("reportError")}
           </Button>
         </div>
       </div>
