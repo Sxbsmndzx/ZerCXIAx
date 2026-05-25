@@ -1,0 +1,113 @@
+import { useState } from "react";
+import { Link, useLocation } from "wouter";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { useLoginUser } from "@workspace/api-client-react";
+import { useAuth } from "../contexts/AuthContext";
+import { OnyxLogo } from "../components/common/OnyxLogo";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+
+const loginSchema = z.object({
+  email: z.string().email("Correo electrónico inválido"),
+  password: z.string().min(1, "La contraseña es requerida"),
+});
+
+export default function LoginPage() {
+  const [, setLocation] = useLocation();
+  const { login } = useAuth();
+  const { toast } = useToast();
+  
+  const form = useForm<z.infer<typeof loginSchema>>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const loginMutation = useLoginUser({
+    mutation: {
+      onSuccess: (data) => {
+        login(data.token, data.user);
+        setLocation("/chat");
+      },
+      onError: (error) => {
+        toast({
+          variant: "destructive",
+          title: "Error al iniciar sesión",
+          description: error.data?.error || "Credenciales inválidas. Por favor, intenta de nuevo.",
+        });
+      }
+    }
+  });
+
+  const onSubmit = (values: z.infer<typeof loginSchema>) => {
+    loginMutation.mutate({ data: values });
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-background">
+      <div className="w-full max-w-md space-y-8">
+        <div className="flex flex-col items-center text-center">
+          <OnyxLogo className="w-12 h-12 text-primary mb-6" />
+          <h1 className="text-3xl font-bold tracking-tight">Bienvenido de nuevo</h1>
+          <p className="text-muted-foreground mt-2">Inicia sesión para continuar a Onyx</p>
+        </div>
+
+        <div className="bg-card border border-border rounded-xl p-8 shadow-sm">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Correo electrónico</FormLabel>
+                    <FormControl>
+                      <Input placeholder="tu@email.com" type="email" {...field} disabled={loginMutation.isPending} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Contraseña</FormLabel>
+                    <FormControl>
+                      <Input type="password" {...field} disabled={loginMutation.isPending} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
+                {loginMutation.isPending ? "Iniciando sesión..." : "Iniciar Sesión"}
+              </Button>
+            </form>
+          </Form>
+
+          <div className="mt-6 text-center text-sm text-muted-foreground">
+            ¿No tienes cuenta?{" "}
+            <Link href="/registro" className="text-primary hover:underline font-medium">
+              Crear cuenta
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
