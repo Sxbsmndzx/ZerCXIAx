@@ -3,17 +3,10 @@ import { eq, and } from "drizzle-orm";
 import { db, onyxConversationsTable, onyxMessagesTable, onyxUserSettingsTable } from "@workspace/db";
 import { SendMessageBody, SendMessageParams } from "@workspace/api-zod";
 import { openai } from "@workspace/integrations-openai-ai-server";
-import { activeSessions } from "./onyx-auth";
+import { getUserIdFromRequest } from "../lib/session";
 import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
-
-function getUserIdFromRequest(req: Parameters<Parameters<typeof router.post>[1]>[0]): number | null {
-  const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith("Bearer ")) return null;
-  const token = authHeader.slice(7);
-  return activeSessions.get(token) ?? null;
-}
 
 const LANGUAGE_INSTRUCTIONS: Record<string, string> = {
   es: "DEBES responder SIEMPRE en español, sin excepción. Nunca respondas en otro idioma.",
@@ -24,7 +17,7 @@ const LANGUAGE_INSTRUCTIONS: Record<string, string> = {
 };
 
 router.post("/conversations/:conversationId/messages", async (req, res): Promise<void> => {
-  const userId = getUserIdFromRequest(req);
+  const userId = await getUserIdFromRequest(req);
   if (!userId) { res.status(401).json({ error: "No autenticado" }); return; }
 
   const params = SendMessageParams.safeParse(req.params);

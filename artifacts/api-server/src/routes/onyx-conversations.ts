@@ -8,19 +8,12 @@ import {
   UpdateConversationParams,
   DeleteConversationParams,
 } from "@workspace/api-zod";
-import { activeSessions } from "./onyx-auth";
+import { getUserIdFromRequest } from "../lib/session";
 
 const router: IRouter = Router();
 
-function getUserIdFromRequest(req: Parameters<Parameters<typeof router.get>[1]>[0]): number | null {
-  const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith("Bearer ")) return null;
-  const token = authHeader.slice(7);
-  return activeSessions.get(token) ?? null;
-}
-
 router.get("/conversations", async (req, res): Promise<void> => {
-  const userId = getUserIdFromRequest(req);
+  const userId = await getUserIdFromRequest(req);
   if (!userId) { res.status(401).json({ error: "No autenticado" }); return; }
 
   const convs = await db
@@ -37,24 +30,19 @@ router.get("/conversations", async (req, res): Promise<void> => {
     .groupBy(onyxConversationsTable.id)
     .orderBy(desc(sql`COALESCE(${onyxConversationsTable.lastMessageAt}, ${onyxConversationsTable.createdAt})`));
 
-  // For each conversation, get the last assistant message as preview
+  // Get last assistant message preview per conversation
   const previewMap = new Map<number, string>();
-  if (convs.length > 0) {
-    const convIds = convs.map(c => c.id);
-    for (const convId of convIds) {
-      const [lastMsg] = await db
-        .select({ content: onyxMessagesTable.content })
-        .from(onyxMessagesTable)
-        .where(and(
-          eq(onyxMessagesTable.conversationId, convId),
-          eq(onyxMessagesTable.role, "assistant")
-        ))
-        .orderBy(desc(onyxMessagesTable.createdAt))
-        .limit(1);
-      if (lastMsg) {
-        previewMap.set(convId, lastMsg.content.substring(0, 80));
-      }
-    }
+  for (const conv of convs) {
+    const [lastMsg] = await db
+      .select({ content: onyxMessagesTable.content })
+      .from(onyxMessagesTable)
+      .where(and(
+        eq(onyxMessagesTable.conversationId, conv.id),
+        eq(onyxMessagesTable.role, "assistant")
+      ))
+      .orderBy(desc(onyxMessagesTable.createdAt))
+      .limit(1);
+    if (lastMsg) previewMap.set(conv.id, lastMsg.content.substring(0, 80));
   }
 
   const result = convs.map(c => ({
@@ -70,7 +58,7 @@ router.get("/conversations", async (req, res): Promise<void> => {
 });
 
 router.post("/conversations", async (req, res): Promise<void> => {
-  const userId = getUserIdFromRequest(req);
+  const userId = await getUserIdFromRequest(req);
   if (!userId) { res.status(401).json({ error: "No autenticado" }); return; }
 
   const parsed = CreateConversationBody.safeParse(req.body);
@@ -92,7 +80,7 @@ router.post("/conversations", async (req, res): Promise<void> => {
 });
 
 router.get("/conversations/:conversationId", async (req, res): Promise<void> => {
-  const userId = getUserIdFromRequest(req);
+  const userId = await getUserIdFromRequest(req);
   if (!userId) { res.status(401).json({ error: "No autenticado" }); return; }
 
   const parsed = GetConversationParams.safeParse(req.params);
@@ -125,7 +113,7 @@ router.get("/conversations/:conversationId", async (req, res): Promise<void> => 
 });
 
 router.patch("/conversations/:conversationId", async (req, res): Promise<void> => {
-  const userId = getUserIdFromRequest(req);
+  const userId = await getUserIdFromRequest(req);
   if (!userId) { res.status(401).json({ error: "No autenticado" }); return; }
 
   const params = UpdateConversationParams.safeParse(req.params);
@@ -144,7 +132,7 @@ router.patch("/conversations/:conversationId", async (req, res): Promise<void> =
 });
 
 router.delete("/conversations/:conversationId", async (req, res): Promise<void> => {
-  const userId = getUserIdFromRequest(req);
+  const userId = await getUserIdFromRequest(req);
   if (!userId) { res.status(401).json({ error: "No autenticado" }); return; }
 
   const parsed = DeleteConversationParams.safeParse(req.params);

@@ -7,6 +7,7 @@ import {
   LoginUserBody,
   UpdateUserProfileBody,
 } from "@workspace/api-zod";
+import { getUserIdFromRequest, createSession, deleteSession } from "../lib/session";
 import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
@@ -28,16 +29,7 @@ function userToResponse(user: typeof onyxUsersTable.$inferSelect) {
 }
 
 function generateToken(userId: number): string {
-  return crypto.createHash("sha256").update(`${userId}:${Date.now()}:onyx_secret`).digest("hex");
-}
-
-const activeSessions = new Map<string, number>();
-
-function getUserIdFromRequest(req: { headers: { authorization?: string } }): number | null {
-  const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith("Bearer ")) return null;
-  const token = authHeader.slice(7);
-  return activeSessions.get(token) ?? null;
+  return crypto.randomBytes(32).toString("hex") + userId.toString(36);
 }
 
 router.post("/auth/register", async (req, res): Promise<void> => {
@@ -65,7 +57,7 @@ router.post("/auth/register", async (req, res): Promise<void> => {
   });
 
   const token = generateToken(user.id);
-  activeSessions.set(token, user.id);
+  await createSession(token, user.id);
   req.log.info({ userId: user.id }, "User registered");
   res.status(201).json({ user: userToResponse(user), token });
 });
@@ -81,19 +73,21 @@ router.post("/auth/login", async (req, res): Promise<void> => {
   }
 
   const token = generateToken(user.id);
-  activeSessions.set(token, user.id);
+  await createSession(token, user.id);
   req.log.info({ userId: user.id }, "User logged in");
   res.json({ user: userToResponse(user), token });
 });
 
 router.post("/auth/logout", async (req, res): Promise<void> => {
   const authHeader = req.headers.authorization;
-  if (authHeader?.startsWith("Bearer ")) activeSessions.delete(authHeader.slice(7));
+  if (authHeader?.startsWith("Bearer ")) {
+    await deleteSession(authHeader.slice(7));
+  }
   res.json({ success: true });
 });
 
 router.get("/auth/me", async (req, res): Promise<void> => {
-  const userId = getUserIdFromRequest(req);
+  const userId = await getUserIdFromRequest(req);
   if (!userId) { res.status(401).json({ error: "No autenticado" }); return; }
   const [user] = await db.select().from(onyxUsersTable).where(eq(onyxUsersTable.id, userId));
   if (!user) { res.status(401).json({ error: "Usuario no encontrado" }); return; }
@@ -101,7 +95,7 @@ router.get("/auth/me", async (req, res): Promise<void> => {
 });
 
 router.patch("/auth/me/profile", async (req, res): Promise<void> => {
-  const userId = getUserIdFromRequest(req);
+  const userId = await getUserIdFromRequest(req);
   if (!userId) { res.status(401).json({ error: "No autenticado" }); return; }
 
   const parsed = UpdateUserProfileBody.safeParse(req.body);
@@ -116,18 +110,16 @@ router.patch("/auth/me/profile", async (req, res): Promise<void> => {
 });
 
 router.post("/auth/me/avatar", async (req, res): Promise<void> => {
-  const userId = getUserIdFromRequest(req);
+  const userId = await getUserIdFromRequest(req);
   if (!userId) { res.status(401).json({ error: "No autenticado" }); return; }
 
   const { avatarUrl } = req.body as { avatarUrl?: string };
   if (!avatarUrl) { res.status(400).json({ error: "Se requiere avatarUrl" }); return; }
 
-  // Validate it's a data URL (base64 image)
   if (!avatarUrl.startsWith("data:image/")) {
     res.status(400).json({ error: "Formato de imagen inválido" }); return;
   }
 
-  // Limit size to ~2MB base64
   if (avatarUrl.length > 2_800_000) {
     res.status(400).json({ error: "La imagen es demasiado grande (máx. 2MB)" }); return;
   }
@@ -142,7 +134,7 @@ router.post("/auth/me/avatar", async (req, res): Promise<void> => {
 });
 
 router.delete("/auth/me/avatar", async (req, res): Promise<void> => {
-  const userId = getUserIdFromRequest(req);
+  const userId = await getUserIdFromRequest(req);
   if (!userId) { res.status(401).json({ error: "No autenticado" }); return; }
 
   const [user] = await db.update(onyxUsersTable)
@@ -154,7 +146,7 @@ router.delete("/auth/me/avatar", async (req, res): Promise<void> => {
 });
 
 router.post("/auth/change-password", async (req, res): Promise<void> => {
-  const userId = getUserIdFromRequest(req);
+  const userId = await getUserIdFromRequest(req);
   if (!userId) { res.status(401).json({ error: "No autenticado" }); return; }
 
   const { currentPassword, newPassword } = req.body as { currentPassword?: string; newPassword?: string };
@@ -175,5 +167,4 @@ router.post("/auth/change-password", async (req, res): Promise<void> => {
   res.json({ success: true });
 });
 
-export { activeSessions };
 export default router;

@@ -2,19 +2,12 @@ import { Router, type IRouter } from "express";
 import { eq, and, desc } from "drizzle-orm";
 import { db, onyxSavedPromptsTable } from "@workspace/db";
 import { CreateSavedPromptBody, DeleteSavedPromptParams } from "@workspace/api-zod";
-import { activeSessions } from "./onyx-auth";
+import { getUserIdFromRequest } from "../lib/session";
 
 const router: IRouter = Router();
 
-function getUserId(req: Parameters<Parameters<typeof router.get>[1]>[0]): number | null {
-  const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith("Bearer ")) return null;
-  const token = authHeader.slice(7);
-  return activeSessions.get(token) ?? null;
-}
-
 router.get("/saved-prompts", async (req, res): Promise<void> => {
-  const userId = getUserId(req);
+  const userId = await getUserIdFromRequest(req);
   if (!userId) { res.status(401).json({ error: "No autenticado" }); return; }
 
   const prompts = await db.select().from(onyxSavedPromptsTable)
@@ -31,7 +24,7 @@ router.get("/saved-prompts", async (req, res): Promise<void> => {
 });
 
 router.post("/saved-prompts", async (req, res): Promise<void> => {
-  const userId = getUserId(req);
+  const userId = await getUserIdFromRequest(req);
   if (!userId) { res.status(401).json({ error: "No autenticado" }); return; }
 
   const parsed = CreateSavedPromptBody.safeParse(req.body);
@@ -54,7 +47,7 @@ router.post("/saved-prompts", async (req, res): Promise<void> => {
 });
 
 router.delete("/saved-prompts/:promptId", async (req, res): Promise<void> => {
-  const userId = getUserId(req);
+  const userId = await getUserIdFromRequest(req);
   if (!userId) { res.status(401).json({ error: "No autenticado" }); return; }
 
   const params = DeleteSavedPromptParams.safeParse(req.params);

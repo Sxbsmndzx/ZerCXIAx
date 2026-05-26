@@ -1,19 +1,12 @@
 import { Router, type IRouter } from "express";
 import { eq, count, and, gte } from "drizzle-orm";
 import { db, onyxConversationsTable, onyxMessagesTable, onyxSavedPromptsTable } from "@workspace/db";
-import { activeSessions } from "./onyx-auth";
+import { getUserIdFromRequest } from "../lib/session";
 
 const router: IRouter = Router();
 
-function getUserId(req: Parameters<Parameters<typeof router.get>[1]>[0]): number | null {
-  const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith("Bearer ")) return null;
-  const token = authHeader.slice(7);
-  return activeSessions.get(token) ?? null;
-}
-
 router.get("/stats/overview", async (req, res): Promise<void> => {
-  const userId = getUserId(req);
+  const userId = await getUserIdFromRequest(req);
   if (!userId) { res.status(401).json({ error: "No autenticado" }); return; }
 
   const startOfDay = new Date();

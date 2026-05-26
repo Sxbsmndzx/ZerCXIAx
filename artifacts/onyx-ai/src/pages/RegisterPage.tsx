@@ -5,6 +5,7 @@ import * as z from "zod";
 import { useRegisterUser } from "@workspace/api-client-react";
 import { useAuth } from "../contexts/AuthContext";
 import { OnyxLogo } from "../components/common/OnyxLogo";
+import { AnimatedBackground } from "../components/common/AnimatedBackground";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -56,15 +57,21 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-background">
-      <div className="w-full max-w-md space-y-8">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
+      <AnimatedBackground />
+
+      <div className="w-full max-w-md space-y-8 relative z-10">
+        {/* Logo + header */}
         <div className="flex flex-col items-center text-center">
-          <OnyxLogo className="w-12 h-12 text-primary mb-6" />
+          <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-6 shadow-[0_0_40px_hsl(var(--primary)/0.3)]">
+            <OnyxLogo className="w-9 h-9 text-primary" />
+          </div>
           <h1 className="text-3xl font-bold tracking-tight">{t("createAccount")}</h1>
           <p className="text-muted-foreground mt-2">{t("joinOnyx")}</p>
         </div>
 
-        <div className="bg-card border border-border rounded-xl p-8 shadow-sm">
+        {/* Card */}
+        <div className="bg-card/80 backdrop-blur-xl border border-border/60 rounded-2xl p-8 shadow-xl shadow-black/20">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
               <FormField
@@ -74,7 +81,13 @@ export default function RegisterPage() {
                   <FormItem>
                     <FormLabel>{t("fullName")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Tu nombre" {...field} disabled={registerMutation.isPending} />
+                      <Input
+                        placeholder="Tu nombre"
+                        {...field}
+                        disabled={registerMutation.isPending}
+                        className="bg-background/50"
+                        autoComplete="name"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -87,7 +100,14 @@ export default function RegisterPage() {
                   <FormItem>
                     <FormLabel>{t("emailLabel")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="tu@email.com" type="email" {...field} disabled={registerMutation.isPending} />
+                      <Input
+                        placeholder="tu@email.com"
+                        type="email"
+                        {...field}
+                        disabled={registerMutation.isPending}
+                        className="bg-background/50"
+                        autoComplete="email"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -100,14 +120,30 @@ export default function RegisterPage() {
                   <FormItem>
                     <FormLabel>{t("passwordLabel")}</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Mínimo 6 caracteres" {...field} disabled={registerMutation.isPending} />
+                      <Input
+                        type="password"
+                        placeholder="Mínimo 6 caracteres"
+                        {...field}
+                        disabled={registerMutation.isPending}
+                        className="bg-background/50"
+                        autoComplete="new-password"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" disabled={registerMutation.isPending}>
-                {registerMutation.isPending ? t("creatingAccount") : t("createAccount")}
+              <Button
+                type="submit"
+                className="w-full h-11 text-base font-medium shadow-[0_0_20px_hsl(var(--primary)/0.3)]"
+                disabled={registerMutation.isPending}
+              >
+                {registerMutation.isPending ? (
+                  <span className="flex items-center gap-2">
+                    <span className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                    {t("creatingAccount")}
+                  </span>
+                ) : t("createAccount")}
               </Button>
             </form>
           </Form>

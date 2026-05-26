@@ -2,16 +2,9 @@ import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
 import { db, onyxUserSettingsTable } from "@workspace/db";
 import { UpdateSettingsBody } from "@workspace/api-zod";
-import { activeSessions } from "./onyx-auth";
+import { getUserIdFromRequest } from "../lib/session";
 
 const router: IRouter = Router();
-
-function getUserId(req: Parameters<Parameters<typeof router.get>[1]>[0]): number | null {
-  const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith("Bearer ")) return null;
-  const token = authHeader.slice(7);
-  return activeSessions.get(token) ?? null;
-}
 
 function settingsToResponse(s: typeof onyxUserSettingsTable.$inferSelect) {
   return {
@@ -24,7 +17,7 @@ function settingsToResponse(s: typeof onyxUserSettingsTable.$inferSelect) {
 }
 
 router.get("/settings", async (req, res): Promise<void> => {
-  const userId = getUserId(req);
+  const userId = await getUserIdFromRequest(req);
   if (!userId) { res.status(401).json({ error: "No autenticado" }); return; }
 
   const [settings] = await db.select().from(onyxUserSettingsTable)
@@ -47,7 +40,7 @@ router.get("/settings", async (req, res): Promise<void> => {
 });
 
 router.patch("/settings", async (req, res): Promise<void> => {
-  const userId = getUserId(req);
+  const userId = await getUserIdFromRequest(req);
   if (!userId) { res.status(401).json({ error: "No autenticado" }); return; }
 
   const parsed = UpdateSettingsBody.safeParse(req.body);
