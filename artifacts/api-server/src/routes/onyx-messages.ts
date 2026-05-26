@@ -2,7 +2,7 @@ import { Router, type IRouter } from "express";
 import { eq, and } from "drizzle-orm";
 import { db, onyxConversationsTable, onyxMessagesTable, onyxUserSettingsTable } from "@workspace/db";
 import { SendMessageBody, SendMessageParams } from "@workspace/api-zod";
-import { openai } from "@workspace/integrations-openai-ai-server";
+import { openai, AI_MODEL } from "@workspace/integrations-openai-ai-server";
 import { getUserIdFromRequest } from "../lib/session";
 import { logger } from "../lib/logger";
 
@@ -62,7 +62,7 @@ router.post("/conversations/:conversationId/messages", async (req, res): Promise
   let aiContent = "";
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: AI_MODEL,
       max_completion_tokens: 8192,
       messages: chatMessages,
     });

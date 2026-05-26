@@ -27,6 +27,11 @@ const profileSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
 });
 
+const AUTH_KEY = "onyx_token";
+function getToken() {
+  return localStorage.getItem(AUTH_KEY) || sessionStorage.getItem(AUTH_KEY);
+}
+
 export default function ProfilePage() {
   const { user } = useAuthGuard();
   const { updateUser } = useAuth();
@@ -47,8 +52,8 @@ export default function ProfilePage() {
         updateUser(data);
         toast({ title: "Perfil actualizado", description: "Tus datos han sido guardados." });
       },
-      onError: () => {
-        toast({ variant: "destructive", title: "Error", description: "No se pudo actualizar el perfil." });
+      onError: (err: any) => {
+        toast({ variant: "destructive", title: "Error", description: err?.data?.error || "No se pudo actualizar el perfil." });
       },
     },
   });
@@ -61,54 +66,48 @@ export default function ProfilePage() {
       toast({ variant: "destructive", title: "Error", description: "Solo se permiten imágenes." });
       return;
     }
-
     if (file.size > 2 * 1024 * 1024) {
       toast({ variant: "destructive", title: "Error", description: "La imagen debe ser menor a 2MB." });
       return;
     }
 
     setUploadingAvatar(true);
-    try {
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        const avatarUrl = event.target?.result as string;
-        const token = localStorage.getItem("onyx_token") || sessionStorage.getItem("onyx_token");
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const avatarUrl = event.target?.result as string;
+      try {
         const res = await fetch("/api/auth/me/avatar", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            Authorization: `Bearer ${getToken()}`,
           },
           body: JSON.stringify({ avatarUrl }),
         });
-
         if (res.ok) {
           const data = await res.json();
           queryClient.invalidateQueries({ queryKey: getGetCurrentUserQueryKey() });
           updateUser(data);
-          toast({ title: "Foto actualizada", description: "Tu foto de perfil ha sido guardada." });
+          toast({ title: "Foto actualizada" });
         } else {
           const err = await res.json();
           toast({ variant: "destructive", title: "Error", description: err.error || "No se pudo subir la foto." });
         }
-        setUploadingAvatar(false);
-      };
-      reader.readAsDataURL(file);
-    } catch {
-      toast({ variant: "destructive", title: "Error", description: "Error al procesar la imagen." });
+      } catch {
+        toast({ variant: "destructive", title: "Error", description: "Error al subir la foto." });
+      }
       setUploadingAvatar(false);
-    }
-    // Reset input
+    };
+    reader.readAsDataURL(file);
     e.target.value = "";
   };
 
   const handleRemoveAvatar = async () => {
     setUploadingAvatar(true);
     try {
-      const token = localStorage.getItem("onyx_token") || sessionStorage.getItem("onyx_token");
       const res = await fetch("/api/auth/me/avatar", {
         method: "DELETE",
-        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        headers: { Authorization: `Bearer ${getToken()}` },
       });
       if (res.ok) {
         queryClient.invalidateQueries({ queryKey: getGetCurrentUserQueryKey() });
@@ -137,7 +136,7 @@ export default function ProfilePage() {
             <p className="text-muted-foreground text-sm mt-1">Administra tu información personal.</p>
           </div>
 
-          {/* Avatar Section */}
+          {/* Avatar */}
           <div className="flex flex-col items-center gap-4 p-6 bg-card border border-border rounded-xl">
             <div className="relative group">
               <UserAvatarBadge user={user} className="w-24 h-24 text-2xl border-2 border-primary/20" />
@@ -155,13 +154,7 @@ export default function ProfilePage() {
               </button>
             </div>
 
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleAvatarChange}
-            />
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
 
             <div className="text-center">
               <h2 className="font-semibold">{user.name}</h2>
@@ -172,24 +165,12 @@ export default function ProfilePage() {
             </div>
 
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1.5"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploadingAvatar}
-              >
+              <Button variant="outline" size="sm" className="gap-1.5" onClick={() => fileInputRef.current?.click()} disabled={uploadingAvatar}>
                 <Camera className="w-3.5 h-3.5" />
                 {hasAvatar ? "Cambiar foto" : "Subir foto"}
               </Button>
               {hasAvatar && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1.5 text-destructive hover:text-destructive"
-                  onClick={handleRemoveAvatar}
-                  disabled={uploadingAvatar}
-                >
+                <Button variant="outline" size="sm" className="gap-1.5 text-destructive hover:text-destructive" onClick={handleRemoveAvatar} disabled={uploadingAvatar}>
                   <Trash2 className="w-3.5 h-3.5" />
                   Eliminar
                 </Button>
@@ -202,6 +183,7 @@ export default function ProfilePage() {
             <h3 className="font-semibold mb-4">Información personal</h3>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                {/* Name — editable */}
                 <FormField
                   control={form.control}
                   name="name"
@@ -219,20 +201,27 @@ export default function ProfilePage() {
                   )}
                 />
 
+                {/* Email — read only, plain label */}
                 <div className="space-y-2">
-                  <FormLabel>Correo electrónico</FormLabel>
+                  <label className="text-sm font-medium leading-none">Correo electrónico</label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input className="pl-9" value={user.email} disabled />
+                    <Input className="pl-9 opacity-60" value={user.email} disabled readOnly />
                   </div>
                   <p className="text-xs text-muted-foreground">El correo no se puede cambiar.</p>
                 </div>
 
+                {/* Member since — read only, plain label */}
                 <div className="space-y-2">
-                  <FormLabel>Miembro desde</FormLabel>
+                  <label className="text-sm font-medium leading-none">Miembro desde</label>
                   <div className="relative">
                     <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input className="pl-9" value={format(new Date(user.createdAt), "d 'de' MMMM, yyyy", { locale: es })} disabled />
+                    <Input
+                      className="pl-9 opacity-60"
+                      value={format(new Date(user.createdAt), "d 'de' MMMM, yyyy", { locale: es })}
+                      disabled
+                      readOnly
+                    />
                   </div>
                 </div>
 

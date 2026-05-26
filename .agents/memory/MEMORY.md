@@ -1,2 +1,2 @@
-- [OpenAI client setup](openai-client-setup.md) — use OPENAI_API_KEY directly; all three client files (chat, image, audio) must be patched away from AI_INTEGRATIONS_* vars.
-- [Accent color system](accent-color-system.md) — colors stored as HSL strings (e.g. "187 100% 42%"), applied via --onyx-accent CSS var; ThemeContext applies it globally so it works on all pages, not just SettingsPage.
+- [OpenRouter API key detection](openrouter-key.md) — OPENAI_API_KEY may be an OpenRouter key (sk-or-v1 prefix); detect and route accordingly
+- [DB sessions vs in-memory](db-sessions.md) — sessions stored in onyx_sessions table; in-memory Map was replaced; old tokens invalid after server restart

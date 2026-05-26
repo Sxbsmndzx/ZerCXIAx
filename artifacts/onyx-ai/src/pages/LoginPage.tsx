@@ -65,8 +65,8 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-8 relative z-10">
         {/* Logo + header */}
         <div className="flex flex-col items-center text-center">
-          <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-6 shadow-[0_0_40px_hsl(var(--primary)/0.3)]">
-            <OnyxLogo className="w-9 h-9 text-primary" />
+          <div className="mb-6 flex items-center justify-center">
+            <OnyxLogo size="lg" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight">{t("welcomeBack")}</h1>
           <p className="text-muted-foreground mt-2">{t("loginSubtitle")}</p>
