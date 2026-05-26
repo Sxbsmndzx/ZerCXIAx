@@ -448,6 +448,9 @@ components:
           type: string
         avatarInitials:
           type: string
+        avatarUrl:
+          type: string
+          nullable: true
         plan:
           type: string
           enum: [free, plus, pro]
@@ -471,6 +474,9 @@ components:
         lastMessageAt:
           type: ["string", "null"]
           format: date-time
+        lastMessagePreview:
+          type: string
+          nullable: true
         messageCount:
           type: integer
         createdAt:

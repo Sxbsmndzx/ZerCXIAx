@@ -49,6 +49,7 @@ export interface User {
   email: string;
   name: string;
   avatarInitials?: string;
+  avatarUrl?: string | null;
   plan: UserPlan;
   createdAt: string;
 }
@@ -63,6 +64,7 @@ export interface Conversation {
   title: string;
   /** @nullable */
   lastMessageAt?: string | null;
+  lastMessagePreview?: string | null;
   messageCount: number;
   createdAt: string;
 }

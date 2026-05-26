@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuthGuard } from "../hooks/useAuthGuard";
 import { AppLayout } from "../components/layout/AppLayout";
 import { useAuth } from "../contexts/AuthContext";
@@ -24,29 +24,39 @@ export default function SettingsPage() {
   const { t } = useTranslation();
   useAuthGuard();
 
+  // Local state for toggles (prevents flash)
+  const [voiceEnabled, setVoiceEnabled] = useState(false);
+  const [dataEnabled, setDataEnabled] = useState(true);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+
   const logoutMutation = useLogoutUser({
     mutation: {
-      onSuccess: () => {
-        logout();
-        setLocation("/");
-      },
+      onSuccess: () => { logout(); setLocation("/"); },
     },
   });
 
   const { data: settings } = useGetSettings({
-    query: {
-      enabled: !!user,
-      queryKey: ["/api/settings"],
-    },
+    query: { enabled: !!user, queryKey: ["/api/settings"] },
   });
+
+  // Sync local state when settings load
+  useEffect(() => {
+    if (settings && !settingsLoaded) {
+      setVoiceEnabled(settings.voiceModeEnabled ?? false);
+      setDataEnabled(settings.dataTrainingEnabled ?? true);
+      setSettingsLoaded(true);
+    }
+  }, [settings, settingsLoaded]);
 
   const updateSettingsMutation = useUpdateSettings();
 
   const handleVoiceToggle = (checked: boolean) => {
+    setVoiceEnabled(checked);
     updateSettingsMutation.mutate({ data: { voiceModeEnabled: checked } });
   };
 
   const handleDataToggle = (checked: boolean) => {
+    setDataEnabled(checked);
     updateSettingsMutation.mutate({ data: { dataTrainingEnabled: checked } });
   };
 
@@ -58,7 +68,7 @@ export default function SettingsPage() {
         <div className="max-w-2xl mx-auto px-4 py-8 md:px-8 space-y-8">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">{t("configuration")}</h1>
-            <p className="text-muted-foreground text-sm mt-1">Administra tus preferencias y la apariencia de Onyx.</p>
+            <p className="text-muted-foreground text-sm mt-1">Administra tus preferencias de Onyx.</p>
           </div>
 
           {/* Profile Summary */}
@@ -88,46 +98,45 @@ export default function SettingsPage() {
             <h3 className="text-base font-semibold border-b border-border pb-2">{t("general")}</h3>
             <LanguageSelector />
 
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5 flex-1 min-w-0 pr-4">
-                <Label className="flex items-center gap-2 text-sm font-medium">
+            <div className="flex items-center justify-between gap-4 py-1">
+              <div className="flex-1 min-w-0">
+                <Label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
                   <Mic className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                   {t("voiceMode")}
                 </Label>
-                <p className="text-xs text-muted-foreground">{t("voiceModeDesc")}</p>
+                <p className="text-xs text-muted-foreground mt-0.5 ml-6">{t("voiceModeDesc")}</p>
               </div>
               <Switch
-                checked={settings?.voiceModeEnabled ?? false}
+                checked={voiceEnabled}
                 onCheckedChange={handleVoiceToggle}
-                disabled={updateSettingsMutation.isPending}
+                disabled={updateSettingsMutation.isPending || !settingsLoaded}
               />
             </div>
           </section>
 
-          {/* Privacidad y Datos */}
+          {/* Privacidad */}
           <section className="space-y-4">
             <h3 className="text-base font-semibold border-b border-border pb-2">{t("privacy")}</h3>
 
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5 flex-1 min-w-0 pr-4">
-                <Label className="flex items-center gap-2 text-sm font-medium">
+            <div className="flex items-center justify-between gap-4 py-1">
+              <div className="flex-1 min-w-0">
+                <Label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
                   <Database className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                   {t("trainingData")}
                 </Label>
-                <p className="text-xs text-muted-foreground">{t("trainingDataDesc")}</p>
+                <p className="text-xs text-muted-foreground mt-0.5 ml-6">{t("trainingDataDesc")}</p>
               </div>
               <Switch
-                checked={settings?.dataTrainingEnabled ?? false}
+                checked={dataEnabled}
                 onCheckedChange={handleDataToggle}
-                disabled={updateSettingsMutation.isPending}
+                disabled={updateSettingsMutation.isPending || !settingsLoaded}
               />
             </div>
           </section>
 
           {/* Seguridad */}
-          <section className="space-y-4">
+          <section className="space-y-3">
             <h3 className="text-base font-semibold border-b border-border pb-2">{t("security")}</h3>
-
             <button
               onClick={() => setSecurityOpen(true)}
               className="w-full flex items-center gap-3 p-4 rounded-xl bg-card border border-border hover:bg-secondary/50 transition-colors text-left"
@@ -144,7 +153,7 @@ export default function SettingsPage() {
           </section>
 
           {/* Soporte */}
-          <section className="space-y-4">
+          <section className="space-y-3">
             <h3 className="text-base font-semibold border-b border-border pb-2">{t("support")}</h3>
 
             <button

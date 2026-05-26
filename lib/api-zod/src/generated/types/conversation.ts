@@ -11,6 +11,7 @@ export interface Conversation {
   title: string;
   /** @nullable */
   lastMessageAt?: Date | null;
+  lastMessagePreview?: string | null;
   messageCount: number;
   createdAt: Date;
 }

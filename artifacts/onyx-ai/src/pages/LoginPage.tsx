@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -6,6 +7,7 @@ import { useLoginUser } from "@workspace/api-client-react";
 import { useAuth } from "../contexts/AuthContext";
 import { OnyxLogo } from "../components/common/OnyxLogo";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -28,6 +30,7 @@ export default function LoginPage() {
   const { login } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation();
+  const [rememberMe, setRememberMe] = useState(true);
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -37,14 +40,14 @@ export default function LoginPage() {
   const loginMutation = useLoginUser({
     mutation: {
       onSuccess: (data) => {
-        login(data.token, data.user);
+        login(data.token, data.user, rememberMe);
         setLocation("/chat");
       },
       onError: (error) => {
         toast({
           variant: "destructive",
           title: t("errorTitle"),
-          description: (error as any).data?.error || "Credenciales inválidas. Por favor, intenta de nuevo.",
+          description: (error as any).data?.error || "Credenciales inválidas.",
         });
       },
     },
@@ -92,6 +95,23 @@ export default function LoginPage() {
                   </FormItem>
                 )}
               />
+
+              {/* Remember Me */}
+              <div className="flex items-center gap-2.5">
+                <Checkbox
+                  id="remember-me"
+                  checked={rememberMe}
+                  onCheckedChange={(checked) => setRememberMe(checked === true)}
+                  disabled={loginMutation.isPending}
+                />
+                <label
+                  htmlFor="remember-me"
+                  className="text-sm text-muted-foreground cursor-pointer select-none"
+                >
+                  Mantener sesión iniciada
+                </label>
+              </div>
+
               <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
                 {loginMutation.isPending ? t("loggingIn") : t("loginButton")}
               </Button>
@@ -104,8 +124,7 @@ export default function LoginPage() {
               {t("createAccount")}
             </Link>
           </div>
-
-          <div className="mt-4 text-center text-xs text-muted-foreground">
+          <div className="mt-3 text-center text-xs text-muted-foreground">
             <Link href="/terminos" className="hover:text-primary hover:underline transition-colors">
               {t("termsAndConditions")}
             </Link>

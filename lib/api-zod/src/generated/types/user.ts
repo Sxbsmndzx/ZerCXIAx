@@ -12,6 +12,7 @@ export interface User {
   email: string;
   name: string;
   avatarInitials?: string;
+  avatarUrl?: string | null;
   plan: UserPlan;
   createdAt: Date;
 }

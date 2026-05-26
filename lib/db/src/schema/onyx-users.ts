@@ -8,6 +8,7 @@ export const onyxUsersTable = pgTable("onyx_users", {
   passwordHash: text("password_hash").notNull(),
   name: text("name").notNull(),
   avatarInitials: text("avatar_initials").notNull().default(""),
+  avatarUrl: text("avatar_url"),
   plan: text("plan").notNull().default("free"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

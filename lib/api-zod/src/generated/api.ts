@@ -44,6 +44,7 @@ export const LoginUserResponse = zod.object({
   "email": zod.string(),
   "name": zod.string(),
   "avatarInitials": zod.string().optional(),
+  "avatarUrl": zod.string().nullish(),
   "plan": zod.enum(['free', 'plus', 'pro']),
   "createdAt": zod.coerce.date()
 }),
@@ -68,6 +69,7 @@ export const GetCurrentUserResponse = zod.object({
   "email": zod.string(),
   "name": zod.string(),
   "avatarInitials": zod.string().optional(),
+  "avatarUrl": zod.string().nullish(),
   "plan": zod.enum(['free', 'plus', 'pro']),
   "createdAt": zod.coerce.date()
 })
@@ -86,6 +88,7 @@ export const UpdateUserProfileResponse = zod.object({
   "email": zod.string(),
   "name": zod.string(),
   "avatarInitials": zod.string().optional(),
+  "avatarUrl": zod.string().nullish(),
   "plan": zod.enum(['free', 'plus', 'pro']),
   "createdAt": zod.coerce.date()
 })
@@ -98,6 +101,7 @@ export const ListConversationsResponseItem = zod.object({
   "id": zod.number(),
   "title": zod.string(),
   "lastMessageAt": zod.coerce.date().nullish(),
+  "lastMessagePreview": zod.string().nullish(),
   "messageCount": zod.number(),
   "createdAt": zod.coerce.date()
 })
@@ -148,6 +152,7 @@ export const UpdateConversationResponse = zod.object({
   "id": zod.number(),
   "title": zod.string(),
   "lastMessageAt": zod.coerce.date().nullish(),
+  "lastMessagePreview": zod.string().nullish(),
   "messageCount": zod.number(),
   "createdAt": zod.coerce.date()
 })
