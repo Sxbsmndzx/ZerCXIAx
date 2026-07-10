@@ -6,6 +6,7 @@ import onyxMessagesRouter from "./onyx-messages";
 import onyxSettingsRouter from "./onyx-settings";
 import onyxSavedPromptsRouter from "./onyx-saved-prompts";
 import onyxStatsRouter from "./onyx-stats";
+import zercxReportesRouter from "./zercx-reportes";
 
 const router: IRouter = Router();
 
@@ -16,5 +17,7 @@ router.use(onyxMessagesRouter);
 router.use(onyxSettingsRouter);
 router.use(onyxSavedPromptsRouter);
 router.use(onyxStatsRouter);
+// Ruta de reportes — guarda reportes de mensajes incorrectos
+router.use(zercxReportesRouter);
 
 export default router;

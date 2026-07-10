@@ -1,3 +1,5 @@
+// CONFIGURACIÓN DE RUTAS DE LA APLICACIÓN
+// Para agregar una nueva página: importa el componente y añade un <Route> aquí.
 import { Switch, Route, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -15,6 +17,7 @@ import HistoryPage from "./pages/HistoryPage";
 import SettingsPage from "./pages/SettingsPage";
 import ProfilePage from "./pages/ProfilePage";
 import TermsPage from "./pages/TermsPage";
+import PaginaAdmin from "./pages/PaginaAdmin";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -36,6 +39,8 @@ function Router() {
       <Route path="/configuracion" component={SettingsPage} />
       <Route path="/perfil" component={ProfilePage} />
       <Route path="/terminos" component={TermsPage} />
+      {/* Panel de administración — solo accesible vía URL directa */}
+      <Route path="/admin/reportes" component={PaginaAdmin} />
       <Route component={NotFound} />
     </Switch>
   );

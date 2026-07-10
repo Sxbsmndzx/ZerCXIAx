@@ -1,5 +1,6 @@
-// BURBUJA DE MENSAJE
-// Muestra cada mensaje del chat. Mensajes del usuario a la derecha, de la IA a la izquierda.
+// BURBUJA DE MENSAJE (forma de nube)
+// Muestra cada mensaje del chat con forma redondeada tipo nube.
+// Mensajes del usuario: derecha, color cian. Mensajes de la IA: izquierda, color oscuro.
 // Botones de acción (Copiar, Reportar) aparecen debajo de los mensajes de la IA.
 import { Message } from "@workspace/api-client-react";
 import { UserAvatarBadge } from "../common/UserAvatarBadge";
@@ -10,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useState } from "react";
 
-// Correo de soporte al que llegan los reportes de mensajes
+// Correo de soporte al que llegan los reportes
 const CORREO_SOPORTE = "zercxiasupport@gmail.com";
 
 interface BurbujaMensajeProps {
@@ -24,7 +25,7 @@ export function ChatMessageBubble({ message }: BurbujaMensajeProps) {
   const esMensajeUsuario = message.role === "user";
   const [copiado, setCopiado] = useState(false);
 
-  // Copia el texto del mensaje al portapapeles
+  // Copia el texto al portapapeles
   const handleCopiar = () => {
     navigator.clipboard.writeText(message.content);
     setCopiado(true);
@@ -32,13 +33,33 @@ export function ChatMessageBubble({ message }: BurbujaMensajeProps) {
     toast({ title: t("copied"), description: "El mensaje ha sido copiado." });
   };
 
-  // Abre el correo del usuario con el reporte pre-llenado
-  const handleReportar = () => {
+  // Reporta la respuesta: guarda en la base de datos Y abre el correo pre-llenado
+  const handleReportar = async () => {
+    // 1. Guardar en la base de datos (silencioso si falla)
+    try {
+      const token = localStorage.getItem("onyx_token");
+      await fetch("/api/reportes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          mensajeId: message.id,
+          contenido: message.content,
+          motivo: "Respuesta incorrecta o inapropiada",
+        }),
+      });
+    } catch {
+      // Si falla el guardado, igual abrimos el correo
+    }
+
+    // 2. Abrir el correo del usuario pre-llenado
     const asunto = encodeURIComponent("[ZerCX AI] Reporte de respuesta incorrecta");
     const cuerpo = encodeURIComponent(
-      `Hola, quiero reportar la siguiente respuesta de ZerCX AI:\n\n` +
+      `Hola, quiero reportar esta respuesta de ZerCX AI:\n\n` +
       `"${message.content}"\n\n` +
-      `Motivo del reporte:\n(Escribe aquí el motivo)\n\n` +
+      `Motivo:\n(Escribe aquí el motivo)\n\n` +
       `---\nEnviado desde ZerCX AI`
     );
     window.open(`mailto:${CORREO_SOPORTE}?subject=${asunto}&body=${cuerpo}`, "_blank");
@@ -50,38 +71,38 @@ export function ChatMessageBubble({ message }: BurbujaMensajeProps) {
 
   return (
     <div className={`flex w-full ${esMensajeUsuario ? "justify-end" : "justify-start"} mb-5`}>
-      <div className={`flex max-w-[85%] ${esMensajeUsuario ? "flex-row-reverse" : "flex-row"} items-start gap-3`}>
-        {/* Avatar del usuario o logo de la IA */}
-        <div className="flex-shrink-0 mt-0.5">
+      <div className={`flex max-w-[85%] ${esMensajeUsuario ? "flex-row-reverse" : "flex-row"} items-end gap-2.5`}>
+        {/* Avatar o logo */}
+        <div className="flex-shrink-0 mb-1">
           {esMensajeUsuario ? (
-            user ? <UserAvatarBadge user={user} className="w-8 h-8 text-xs" /> : null
+            user ? <UserAvatarBadge user={user} className="w-7 h-7 text-xs" /> : null
           ) : (
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 text-primary">
+            <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
               <OnyxLogo className="w-4 h-4" />
             </div>
           )}
         </div>
 
         <div className={`flex flex-col gap-1.5 ${esMensajeUsuario ? "items-end" : "items-start"}`}>
-          {/* Burbuja del mensaje */}
+          {/* Burbuja con forma de nube — muy redondeada con una esquina pequeña como cola */}
           <div
-            className={`px-4 py-3 rounded-2xl ${
+            className={`px-5 py-3.5 text-[14px] leading-relaxed whitespace-pre-wrap ${
               esMensajeUsuario
-                ? "bg-primary text-primary-foreground rounded-tr-sm"
-                : "bg-card border border-border text-foreground rounded-tl-sm shadow-sm"
+                ? "bg-primary text-primary-foreground rounded-[28px] rounded-tr-[6px] shadow-lg shadow-primary/20"
+                : "bg-card/90 backdrop-blur-sm border border-border/60 text-foreground rounded-[28px] rounded-tl-[6px] shadow-lg shadow-black/30"
             }`}
           >
-            <p className="whitespace-pre-wrap leading-relaxed text-[14px]">{message.content}</p>
+            {message.content}
           </div>
 
-          {/* Botones de acción (solo en mensajes de la IA) */}
+          {/* Botones de acción (solo mensajes de la IA) */}
           {!esMensajeUsuario && (
-            <div className="flex items-center gap-3 px-1">
-              {/* Botón Copiar */}
+            <div className="flex items-center gap-3 px-2">
+              {/* Copiar */}
               <button
                 onClick={handleCopiar}
                 className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                title="Copiar texto"
+                title="Copiar respuesta"
               >
                 {copiado ? (
                   <Check className="w-3 h-3 text-primary" />
@@ -91,10 +112,9 @@ export function ChatMessageBubble({ message }: BurbujaMensajeProps) {
                 <span>{copiado ? t("copied") : t("copy")}</span>
               </button>
 
-              {/* Separador visual */}
-              <span className="text-muted-foreground/30 text-xs">·</span>
+              <span className="text-muted-foreground/30">·</span>
 
-              {/* Botón Reportar — abre correo pre-llenado */}
+              {/* Reportar */}
               <button
                 onClick={handleReportar}
                 className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-destructive transition-colors"

@@ -11,7 +11,14 @@ import { SecurityDialog } from "../components/common/SecurityDialog";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { LogOut, Shield, Mic, Database, AlertTriangle, FileText, ChevronRight } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { LogOut, Shield, Mic, Database, AlertTriangle, FileText, ChevronRight, Crown, Flag } from "lucide-react";
 import { useLogoutUser, useUpdateSettings, useGetSettings } from "@workspace/api-client-react";
 import { useLocation, Link } from "wouter";
 import { useTranslation } from "../hooks/useTranslation";
@@ -21,6 +28,7 @@ export default function SettingsPage() {
   const [, setLocation] = useLocation();
   const [reportOpen, setReportOpen] = useState(false);
   const [securityOpen, setSecurityOpen] = useState(false);
+  const [premiumOpen, setPremiumOpen] = useState(false);
   const { t } = useTranslation();
   useAuthGuard();
 
@@ -114,6 +122,50 @@ export default function SettingsPage() {
             </div>
           </section>
 
+          {/* Plan Premium — Próximamente */}
+          <section className="space-y-3">
+            <h3 className="text-base font-semibold border-b border-border pb-2">Plan</h3>
+            <button
+              onClick={() => setPremiumOpen(true)}
+              className="w-full flex items-center gap-3 p-4 rounded-xl border transition-colors text-left relative overflow-hidden"
+              style={{
+                background: "linear-gradient(135deg, hsl(var(--primary)/0.08) 0%, hsl(45 100% 60% / 0.08) 100%)",
+                borderColor: "hsl(45 100% 60% / 0.4)",
+              }}
+            >
+              {/* Brillo decorativo */}
+              <div
+                className="absolute top-0 right-0 w-32 h-32 rounded-full blur-[60px] pointer-events-none opacity-30"
+                style={{ background: "hsl(45 100% 60%)" }}
+              />
+              <div
+                className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ background: "linear-gradient(135deg, hsl(45 100% 60% / 0.2), hsl(40 100% 50% / 0.3))" }}
+              >
+                <Crown className="w-4 h-4" style={{ color: "hsl(45 100% 60%)" }} />
+              </div>
+              <div className="flex-1 min-w-0 relative">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-foreground">Plan Premium</span>
+                  <span
+                    className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide"
+                    style={{
+                      background: "hsl(45 100% 60% / 0.15)",
+                      color: "hsl(45 100% 60%)",
+                      border: "1px solid hsl(45 100% 60% / 0.3)",
+                    }}
+                  >
+                    Próximamente
+                  </span>
+                </div>
+                <div className="text-xs text-muted-foreground mt-0.5">
+                  Respuestas más rápidas, sin límites y funciones exclusivas
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0 relative" />
+            </button>
+          </section>
+
           {/* Privacidad */}
           <section className="space-y-4">
             <h3 className="text-base font-semibold border-b border-border pb-2">{t("privacy")}</h3>
@@ -155,6 +207,20 @@ export default function SettingsPage() {
           {/* Soporte */}
           <section className="space-y-3">
             <h3 className="text-base font-semibold border-b border-border pb-2">{t("support")}</h3>
+
+            {/* Enlace al panel de reportes (admin) */}
+            <Link href="/admin/reportes">
+              <button className="w-full flex items-center gap-3 p-4 rounded-xl bg-card border border-border hover:bg-secondary/50 transition-colors text-left">
+                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Flag className="w-4 h-4 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium">Panel de Reportes</div>
+                  <div className="text-xs text-muted-foreground">Ver reportes enviados por usuarios</div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+              </button>
+            </Link>
 
             <button
               onClick={() => setReportOpen(true)}
@@ -201,6 +267,76 @@ export default function SettingsPage() {
 
       <ReportErrorDialog open={reportOpen} onOpenChange={setReportOpen} />
       <SecurityDialog open={securityOpen} onOpenChange={setSecurityOpen} />
+
+      {/* Diálogo Plan Premium — Coming Soon */}
+      <Dialog open={premiumOpen} onOpenChange={setPremiumOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <Crown className="w-5 h-5" style={{ color: "hsl(45 100% 60%)" }} />
+              Plan Premium
+            </DialogTitle>
+            <DialogDescription>
+              Estamos preparando algo increíble para ti.
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Banner Coming Soon */}
+          <div
+            className="rounded-2xl p-6 text-center space-y-3 my-2"
+            style={{
+              background: "linear-gradient(135deg, hsl(var(--primary)/0.08), hsl(45 100% 60% / 0.1))",
+              border: "1px solid hsl(45 100% 60% / 0.3)",
+            }}
+          >
+            <div
+              className="text-4xl font-black tracking-tight"
+              style={{ color: "hsl(45 100% 60%)" }}
+            >
+              Próximamente
+            </div>
+            <div
+              className="inline-flex items-center gap-2 text-xs font-bold px-3 py-1 rounded-full"
+              style={{
+                background: "hsl(45 100% 60% / 0.15)",
+                color: "hsl(45 100% 60%)",
+                border: "1px solid hsl(45 100% 60% / 0.4)",
+              }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+              Coming Soon
+            </div>
+          </div>
+
+          {/* Lista de beneficios */}
+          <div className="space-y-2.5 py-1">
+            {[
+              { emoji: "⚡", titulo: "Respuestas ultra-rápidas", desc: "Prioridad máxima en el servidor" },
+              { emoji: "♾️", titulo: "Sin límites de mensajes", desc: "Chatea todo lo que quieras" },
+              { emoji: "🧠", titulo: "Modelos más avanzados", desc: "Acceso a los mejores modelos de IA" },
+              { emoji: "📁", titulo: "Subir archivos y imágenes", desc: "Comparte documentos con la IA" },
+              { emoji: "🎨", titulo: "Temas exclusivos", desc: "Personalización avanzada de la interfaz" },
+            ].map((item) => (
+              <div key={item.titulo} className="flex items-start gap-3 p-2.5 rounded-lg bg-muted/30">
+                <span className="text-base flex-shrink-0">{item.emoji}</span>
+                <div>
+                  <div className="text-sm font-medium text-foreground">{item.titulo}</div>
+                  <div className="text-xs text-muted-foreground">{item.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-xs text-center text-muted-foreground pt-1">
+            Actualmente en Plan <span className="font-semibold text-foreground capitalize">{user?.plan ?? "free"}</span>.
+            El Plan Premium llegará muy pronto — ¡mantente atento!
+          </p>
+
+          <Button onClick={() => setPremiumOpen(false)} className="w-full">
+            Entendido
+          </Button>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }
