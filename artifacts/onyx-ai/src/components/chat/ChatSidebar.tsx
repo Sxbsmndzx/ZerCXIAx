@@ -1,4 +1,5 @@
-import { Plus, Settings, X, History, User as UserIcon, FileText } from "lucide-react";
+import { useState } from "react";
+import { Plus, Settings, X, History, User as UserIcon, FileText, AlertTriangle } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useListConversations } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,7 @@ import { ConversationListItem } from "./ConversationListItem";
 import { OnyxLogo } from "../common/OnyxLogo";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { ReportErrorDialog } from "../common/ReportErrorDialog";
 import { useTranslation } from "../../hooks/useTranslation";
 
 interface ChatSidebarProps {
@@ -14,6 +16,7 @@ interface ChatSidebarProps {
 
 export function ChatSidebar({ onClose }: ChatSidebarProps) {
   const [location, setLocation] = useLocation();
+  const [reportOpen, setReportOpen] = useState(false);
   const { t } = useTranslation();
   const { data: conversations, isLoading } = useListConversations();
 
@@ -130,7 +133,17 @@ export function ChatSidebar({ onClose }: ChatSidebarProps) {
         {navItem("/configuracion", <Settings className="w-4 h-4" />, t("settings"))}
         {navItem("/perfil", <UserIcon className="w-4 h-4" />, t("profile"))}
         {navItem("/terminos", <FileText className="w-4 h-4" />, t("termsAndConditions"))}
+        <Button
+          variant="ghost"
+          onClick={() => setReportOpen(true)}
+          className="w-full justify-start gap-2 text-destructive/70 hover:text-destructive hover:bg-destructive/10"
+        >
+          <AlertTriangle className="w-4 h-4" />
+          {t("reportError")}
+        </Button>
       </div>
+
+      <ReportErrorDialog open={reportOpen} onOpenChange={setReportOpen} />
     </div>
   );
 }

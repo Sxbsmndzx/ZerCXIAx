@@ -7,6 +7,7 @@ import { AccentColorPicker } from "../components/settings/AccentColorPicker";
 import { LanguageSelector } from "../components/settings/LanguageSelector";
 import { UserAvatarBadge } from "../components/common/UserAvatarBadge";
 import { SecurityDialog } from "../components/common/SecurityDialog";
+import { ReportErrorDialog } from "../components/common/ReportErrorDialog";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -25,8 +26,11 @@ import { useTranslation } from "../hooks/useTranslation";
 export default function SettingsPage() {
   const { user, logout } = useAuth();
   const [, setLocation] = useLocation();
+  const [reportOpen, setReportOpen] = useState(false);
   const [securityOpen, setSecurityOpen] = useState(false);
   const [premiumOpen, setPremiumOpen] = useState(false);
+  // Solo el administrador puede ver el Panel de Reportes
+  const esAdmin = user?.email === "mendezperezvladimir@gmail.com";
   const { t } = useTranslation();
   useAuthGuard();
 
