@@ -1,4 +1,8 @@
-import { useEffect, useRef } from "react";
+// PÁGINA DE CONVERSACIÓN
+// Muestra los mensajes de un chat activo con ZerCX AI.
+// Incluye: historial de mensajes, burbuja de "escribiendo...",
+// sugerencias de seguimiento, y barra de entrada de texto.
+import { useEffect, useRef, useState } from "react";
 import { useParams, useLocation } from "wouter";
 import {
   useGetConversation,
@@ -13,6 +17,7 @@ import { ChatInputBar } from "../components/chat/ChatInputBar";
 import { useQueryClient } from "@tanstack/react-query";
 import { OnyxLogo } from "../components/common/OnyxLogo";
 import { useTranslation } from "../hooks/useTranslation";
+import { Sparkles } from "lucide-react";
 
 export default function ConversationPage() {
   const { user } = useAuthGuard();
@@ -24,6 +29,9 @@ export default function ConversationPage() {
   const hasSentRef = useRef(false);
   const { t } = useTranslation();
 
+  // Sugerencias de preguntas de seguimiento generadas por la IA
+  const [sugerencias, setSugerencias] = useState<string[]>([]);
+
   const { data: conversation, isLoading } = useGetConversation(conversationId, {
     query: {
       enabled: !!conversationId,
@@ -33,13 +41,20 @@ export default function ConversationPage() {
 
   const sendMutation = useSendMessage({
     mutation: {
-      onSuccess: () => {
+      onSuccess: (data: any) => {
+        // Captura las sugerencias de la respuesta de la IA
+        if (data?.sugerencias?.length) {
+          setSugerencias(data.sugerencias);
+        } else {
+          setSugerencias([]);
+        }
         queryClient.invalidateQueries({ queryKey: getGetConversationQueryKey(conversationId) });
         queryClient.invalidateQueries({ queryKey: getListConversationsQueryKey() });
       },
     },
   });
 
+  // Envía el mensaje inicial si viene de la pantalla principal (?q=...)
   useEffect(() => {
     if (!location.includes("?q=")) return;
     if (hasSentRef.current) return;
@@ -55,12 +70,20 @@ export default function ConversationPage() {
     }
   }, [location, conversationId, conversation]);
 
+  // Auto-scroll al final cuando llegan mensajes nuevos
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversation?.messages, sendMutation.isPending]);
 
   const handleSendMessage = (content: string) => {
+    setSugerencias([]); // Limpia sugerencias al enviar nuevo mensaje
     sendMutation.mutate({ conversationId, data: { content } });
+  };
+
+  // Al hacer clic en una sugerencia, se envía como mensaje
+  const handleSugerencia = (texto: string) => {
+    setSugerencias([]);
+    handleSendMessage(texto);
   };
 
   if (!user) return null;
@@ -68,12 +91,14 @@ export default function ConversationPage() {
   return (
     <AppLayout>
       <div className="flex flex-col h-full">
+        {/* Título de la conversación */}
         {conversation?.title && (
           <div className="px-4 py-3 border-b border-border/50 bg-background/50 backdrop-blur-sm text-sm font-medium text-muted-foreground truncate text-center flex-shrink-0">
             {conversation.title}
           </div>
         )}
 
+        {/* Área de mensajes */}
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-3xl mx-auto px-4 py-6 md:px-6">
             {isLoading ? (
@@ -93,6 +118,7 @@ export default function ConversationPage() {
               </div>
             )}
 
+            {/* Indicador de "escribiendo..." mientras la IA responde */}
             {sendMutation.isPending && (
               <div className="flex justify-start mb-6">
                 <div className="flex gap-3 max-w-[85%] items-start">
@@ -107,6 +133,27 @@ export default function ConversationPage() {
                     </span>
                     {t("typing")}
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Sugerencias de seguimiento — chips clicables debajo de la última respuesta */}
+            {sugerencias.length > 0 && !sendMutation.isPending && (
+              <div className="mb-4 pl-11">
+                <div className="flex items-center gap-1.5 mb-2 text-xs text-muted-foreground">
+                  <Sparkles className="w-3 h-3 text-primary" />
+                  <span>{t("suggestions")}</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {sugerencias.map((sug, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handleSugerencia(sug)}
+                      className="text-xs px-3 py-1.5 rounded-full border border-primary/30 bg-primary/5 text-foreground hover:bg-primary/15 hover:border-primary/60 transition-all text-left"
+                    >
+                      {sug}
+                    </button>
+                  ))}
                 </div>
               </div>
             )}

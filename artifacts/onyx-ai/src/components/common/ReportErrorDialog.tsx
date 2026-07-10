@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { AlertTriangle, Mail, Send } from "lucide-react";
 
-const SUPPORT_EMAIL = "Onyxaisupport@gmail.com";
+const SUPPORT_EMAIL = "zercxiasupport@gmail.com";
 
 const ERROR_TYPES = [
   "El chat no responde o tarda demasiado",
@@ -43,12 +43,12 @@ export function ReportErrorDialog({ open, onOpenChange }: ReportErrorDialogProps
   const [sent, setSent] = useState(false);
 
   const handleSend = () => {
-    const subject = encodeURIComponent(`[Onyx AI] Reporte de error: ${errorType || "Problema general"}`);
+    const subject = encodeURIComponent(`[ZerCX AI] Reporte de error: ${errorType || "Problema general"}`);
     const body = encodeURIComponent(
       `TIPO DE PROBLEMA:\n${errorType || "No especificado"}\n\n` +
       `DESCRIPCIÓN:\n${description || "No proporcionada"}\n\n` +
       `PASOS PARA REPRODUCIRLO:\n${steps || "No especificados"}\n\n` +
-      `---\nEnviado desde Onyx AI`
+      `---\nEnviado desde ZerCX AI`
     );
     window.open(`mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`, "_blank");
     setSent(true);

@@ -1,3 +1,6 @@
+// PÁGINA DE TÉRMINOS Y CONDICIONES
+// Para editar el contenido legal, modifica las secciones numeradas abajo.
+// El correo de contacto está al final de este archivo.
 import { AppLayout } from "../components/layout/AppLayout";
 import { useAuthGuard } from "../hooks/useAuthGuard";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -16,7 +19,7 @@ export default function TermsPage() {
             </div>
             <div>
               <h1 className="text-3xl font-bold tracking-tight">Términos y Condiciones</h1>
-              <p className="text-sm text-muted-foreground mt-1">Última actualización: 25 de mayo de 2026</p>
+              <p className="text-sm text-muted-foreground mt-1">Última actualización: 10 de julio de 2026</p>
             </div>
           </div>
 
@@ -24,7 +27,7 @@ export default function TermsPage() {
             <section className="space-y-3">
               <h2 className="text-lg font-semibold text-foreground">1. Aceptación de los términos</h2>
               <p>
-                Al acceder y utilizar ZerOne AI ("el Servicio"), aceptas estos Términos y Condiciones en su totalidad.
+                Al acceder y utilizar ZerCX AI ("el Servicio"), aceptas estos Términos y Condiciones en su totalidad.
                 Si no estás de acuerdo con alguna parte de estos términos, no deberás utilizar el Servicio.
               </p>
             </section>
@@ -32,7 +35,7 @@ export default function TermsPage() {
             <section className="space-y-3">
               <h2 className="text-lg font-semibold text-foreground">2. Descripción del servicio</h2>
               <p>
-                ZerOne AI es una plataforma de inteligencia artificial conversacional que permite a los usuarios
+                ZerCX AI es una plataforma de inteligencia artificial conversacional que permite a los usuarios
                 interactuar con un asistente de IA basado en modelos de lenguaje avanzados. El Servicio incluye
                 funcionalidades de chat, historial de conversaciones, configuración personalizada y otras
                 características que se puedan añadir en el futuro.
@@ -55,7 +58,7 @@ export default function TermsPage() {
 
             <section className="space-y-3">
               <h2 className="text-lg font-semibold text-foreground">4. Uso aceptable</h2>
-              <p>Al utilizar ZerOne AI, te comprometes a NO:</p>
+              <p>Al utilizar ZerCX AI, te comprometes a NO:</p>
               <ul className="list-disc pl-6 space-y-1 text-muted-foreground">
                 <li>Usar el Servicio para actividades ilegales o perjudiciales.</li>
                 <li>Intentar acceder sin autorización a sistemas informáticos.</li>
@@ -82,18 +85,18 @@ export default function TermsPage() {
               <h2 className="text-lg font-semibold text-foreground">6. Propiedad intelectual</h2>
               <p>
                 El contenido generado por la IA se proporciona únicamente como herramienta de asistencia.
-                ZerOne AI no reclama propiedad sobre el contenido que generas usando el Servicio, pero tampoco
+                ZerCX AI no reclama propiedad sobre el contenido que generas usando el Servicio, pero tampoco
                 garantiza que dicho contenido sea libre de derechos de terceros.
               </p>
               <p>
-                El nombre "ZerOne AI", su logo, diseño y software son propiedad exclusiva del equipo de ZerOne.
+                El nombre "ZerCX AI", su logo, diseño y software son propiedad exclusiva del equipo de ZerCX.
               </p>
             </section>
 
             <section className="space-y-3">
               <h2 className="text-lg font-semibold text-foreground">7. Limitación de responsabilidad</h2>
               <p>
-                ZerOne AI se proporciona "tal cual" sin garantías de ningún tipo. No garantizamos que:
+                ZerCX AI se proporciona "tal cual" sin garantías de ningún tipo. No garantizamos que:
               </p>
               <ul className="list-disc pl-6 space-y-1 text-muted-foreground">
                 <li>El Servicio esté disponible de forma ininterrumpida.</li>
@@ -127,8 +130,9 @@ export default function TermsPage() {
               <p>
                 Si tienes preguntas sobre estos Términos y Condiciones, contáctanos en:
               </p>
+              {/* CORREO DE CONTACTO — cambia este valor si cambias el correo de soporte */}
               <div className="bg-card border border-border rounded-lg p-4">
-                <p className="font-medium text-primary">zeroneiasupport@gmail.com</p>
+                <p className="font-medium text-primary">zercxiasupport@gmail.com</p>
                 <p className="text-muted-foreground text-xs mt-1">Respondemos en un plazo de 48 horas hábiles.</p>
               </div>
             </section>

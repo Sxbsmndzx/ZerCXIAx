@@ -13,7 +13,7 @@ export const openai = new OpenAI({
   defaultHeaders: isOpenRouter
     ? {
         "HTTP-Referer": "https://onyx-ai.replit.app",
-        "X-Title": "ZerOne AI",
+        "X-Title": "ZerCX AI",
       }
     : undefined,
 });
