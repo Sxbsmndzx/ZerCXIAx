@@ -109,8 +109,9 @@ export default function ConversationPage() {
   return (
     <AppLayout>
       <div className="flex flex-col h-full">
-        {/* Título de la conversación */}
-        {conversation?.title && (
+        {/* Título de la conversación — solo se muestra cuando ya es un título generado por la IA
+            (oculto mientras dice "Nueva conversación" para que no confunda al usuario) */}
+        {conversation?.title && conversation.title !== "Nueva conversación" && (
           <div className="px-4 py-3 border-b border-border/50 bg-background/50 backdrop-blur-sm text-sm font-medium text-muted-foreground truncate text-center flex-shrink-0">
             {conversation.title}
           </div>

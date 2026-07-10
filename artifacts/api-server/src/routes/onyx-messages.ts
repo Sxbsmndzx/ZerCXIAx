@@ -75,7 +75,7 @@ router.post("/conversations/:conversationId/messages", async (req, res): Promise
   const mensajesChat = [
     {
       role: "system" as const,
-      content: `Eres ZerCX, un asistente de inteligencia artificial avanzado, inteligente y preciso. ${instruccionIdioma} Sé conciso pero completo en tus respuestas. Al final de cada respuesta, en una línea separada, incluye exactamente 3 preguntas de seguimiento cortas y relevantes al tema en este formato: SUGERENCIAS: ¿Pregunta 1? | ¿Pregunta 2? | ¿Pregunta 3?`,
+      content: `Eres ZerCX, un asistente de inteligencia artificial avanzado, inteligente y preciso. ${instruccionIdioma} Sé conciso pero completo en tus respuestas. SOLO cuando el tema lo justifique genuinamente (temas complejos, tutoriales, explicaciones técnicas, o cuando haya un seguimiento natural), añade al final una línea con exactamente 3 preguntas de seguimiento en este formato: SUGERENCIAS: ¿Pregunta 1? | ¿Pregunta 2? | ¿Pregunta 3? — NO las incluyas para saludos, respuestas simples, afirmaciones cortas, o cuando no haya un seguimiento natural claro.`,
     },
     ...mensajesPrevios.map((m) => ({
       role: m.role as "user" | "assistant",

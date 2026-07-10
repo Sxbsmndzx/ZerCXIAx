@@ -13,7 +13,7 @@ export function ThemeSelector() {
           <SelectValue placeholder="Selecciona un tema" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="dark">Oscuro (Onyx)</SelectItem>
+          <SelectItem value="dark">Oscuro (ZerCX)</SelectItem>
           <SelectItem value="light">Claro</SelectItem>
           <SelectItem value="system">Sistema</SelectItem>
         </SelectContent>

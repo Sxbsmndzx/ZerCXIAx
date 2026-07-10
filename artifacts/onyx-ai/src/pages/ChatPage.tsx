@@ -25,8 +25,10 @@ export default function ChatPage() {
   });
 
   const handleSendMessage = (content: string) => {
+    // El título real lo genera la IA después del primer mensaje.
+    // Usamos un placeholder para que el usuario no vea su mensaje repetido como título.
     createMutation.mutate(
-      { data: { title: content.substring(0, 50) } },
+      { data: { title: "Nueva conversación" } },
       {
         onSuccess: (data) => {
           setLocation(`/chat/${data.id}?q=${encodeURIComponent(content)}`);
