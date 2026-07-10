@@ -138,7 +138,7 @@ export default function HistoryPage() {
           <div className="flex items-start justify-between mb-1">
             <div>
               <h1 className="text-3xl font-bold">{t("history")}</h1>
-              <p className="text-sm text-muted-foreground mt-0.5">Tus sesiones pasadas con Onyx</p>
+              <p className="text-sm text-muted-foreground mt-0.5">Tus sesiones pasadas con ZerOne</p>
             </div>
             <Button
               variant="ghost"

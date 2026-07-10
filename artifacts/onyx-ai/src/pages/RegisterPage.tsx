@@ -64,7 +64,7 @@ export default function RegisterPage() {
         {/* Logo + header */}
         <div className="flex flex-col items-center text-center">
           <div className="mb-6 flex items-center justify-center">
-            <OnyxLogo size="lg" />
+            <OnyxLogo className="w-24 h-24" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight">{t("createAccount")}</h1>
           <p className="text-muted-foreground mt-2">{t("joinOnyx")}</p>

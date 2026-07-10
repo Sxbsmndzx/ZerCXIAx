@@ -24,7 +24,7 @@ export default function TermsPage() {
             <section className="space-y-3">
               <h2 className="text-lg font-semibold text-foreground">1. Aceptación de los términos</h2>
               <p>
-                Al acceder y utilizar Onyx AI ("el Servicio"), aceptas estos Términos y Condiciones en su totalidad.
+                Al acceder y utilizar ZerOne AI ("el Servicio"), aceptas estos Términos y Condiciones en su totalidad.
                 Si no estás de acuerdo con alguna parte de estos términos, no deberás utilizar el Servicio.
               </p>
             </section>
@@ -32,7 +32,7 @@ export default function TermsPage() {
             <section className="space-y-3">
               <h2 className="text-lg font-semibold text-foreground">2. Descripción del servicio</h2>
               <p>
-                Onyx AI es una plataforma de inteligencia artificial conversacional que permite a los usuarios
+                ZerOne AI es una plataforma de inteligencia artificial conversacional que permite a los usuarios
                 interactuar con un asistente de IA basado en modelos de lenguaje avanzados. El Servicio incluye
                 funcionalidades de chat, historial de conversaciones, configuración personalizada y otras
                 características que se puedan añadir en el futuro.
@@ -55,7 +55,7 @@ export default function TermsPage() {
 
             <section className="space-y-3">
               <h2 className="text-lg font-semibold text-foreground">4. Uso aceptable</h2>
-              <p>Al utilizar Onyx AI, te comprometes a NO:</p>
+              <p>Al utilizar ZerOne AI, te comprometes a NO:</p>
               <ul className="list-disc pl-6 space-y-1 text-muted-foreground">
                 <li>Usar el Servicio para actividades ilegales o perjudiciales.</li>
                 <li>Intentar acceder sin autorización a sistemas informáticos.</li>
@@ -82,18 +82,18 @@ export default function TermsPage() {
               <h2 className="text-lg font-semibold text-foreground">6. Propiedad intelectual</h2>
               <p>
                 El contenido generado por la IA se proporciona únicamente como herramienta de asistencia.
-                Onyx AI no reclama propiedad sobre el contenido que generas usando el Servicio, pero tampoco
+                ZerOne AI no reclama propiedad sobre el contenido que generas usando el Servicio, pero tampoco
                 garantiza que dicho contenido sea libre de derechos de terceros.
               </p>
               <p>
-                El nombre "Onyx AI", su logo, diseño y software son propiedad exclusiva del equipo de Onyx.
+                El nombre "ZerOne AI", su logo, diseño y software son propiedad exclusiva del equipo de ZerOne.
               </p>
             </section>
 
             <section className="space-y-3">
               <h2 className="text-lg font-semibold text-foreground">7. Limitación de responsabilidad</h2>
               <p>
-                Onyx AI se proporciona "tal cual" sin garantías de ningún tipo. No garantizamos que:
+                ZerOne AI se proporciona "tal cual" sin garantías de ningún tipo. No garantizamos que:
               </p>
               <ul className="list-disc pl-6 space-y-1 text-muted-foreground">
                 <li>El Servicio esté disponible de forma ininterrumpida.</li>
@@ -128,7 +128,7 @@ export default function TermsPage() {
                 Si tienes preguntas sobre estos Términos y Condiciones, contáctanos en:
               </p>
               <div className="bg-card border border-border rounded-lg p-4">
-                <p className="font-medium text-primary">Onyxaisupport@gmail.com</p>
+                <p className="font-medium text-primary">zeroneiasupport@gmail.com</p>
                 <p className="text-muted-foreground text-xs mt-1">Respondemos en un plazo de 48 horas hábiles.</p>
               </div>
             </section>

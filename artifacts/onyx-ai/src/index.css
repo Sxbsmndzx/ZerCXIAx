@@ -223,3 +223,12 @@
 .animate-crosses-shimmer {
   animation: crosses-shimmer 3s ease-in-out infinite;
 }
+
+/* ─── ZerOne logo glow ─── */
+@keyframes logo-glow {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(0,200,220,0.35)) brightness(1.05); }
+  50%       { filter: drop-shadow(0 0 22px rgba(0,200,220,0.85)) brightness(1.2); }
+}
+.animate-logo-glow {
+  animation: logo-glow 3s ease-in-out infinite;
+}

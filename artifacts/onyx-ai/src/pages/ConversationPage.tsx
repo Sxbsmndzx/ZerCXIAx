@@ -87,7 +87,7 @@ export default function ConversationPage() {
             ) : (
               <div className="flex flex-col items-center justify-center pt-20 gap-4 text-center text-muted-foreground">
                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
-                  <OnyxLogo className="w-7 h-7 text-primary" />
+                  <OnyxLogo className="w-7 h-7" />
                 </div>
                 <p className="text-sm">{t("startConversation")}</p>
               </div>
@@ -97,7 +97,7 @@ export default function ConversationPage() {
               <div className="flex justify-start mb-6">
                 <div className="flex gap-3 max-w-[85%] items-start">
                   <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 border border-primary/20">
-                    <OnyxLogo className="w-4 h-4 text-primary" />
+                    <OnyxLogo className="w-4 h-4" />
                   </div>
                   <div className="px-4 py-3 rounded-2xl rounded-tl-sm bg-card border border-border text-muted-foreground text-sm flex items-center gap-2">
                     <span className="inline-flex gap-1 items-center">

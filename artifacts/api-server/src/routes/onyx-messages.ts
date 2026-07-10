@@ -41,6 +41,8 @@ router.post("/conversations/:conversationId/messages", async (req, res): Promise
     .where(eq(onyxMessagesTable.conversationId, conv.id))
     .orderBy(onyxMessagesTable.createdAt);
 
+  const isFirstMessage = previousMessages.length === 0;
+
   const [userMsg] = await db.insert(onyxMessagesTable).values({
     conversationId: conv.id,
     role: "user",
@@ -50,7 +52,7 @@ router.post("/conversations/:conversationId/messages", async (req, res): Promise
   const chatMessages = [
     {
       role: "system" as const,
-      content: `Eres Onyx, un asistente de inteligencia artificial avanzado, inteligente y preciso. ${langInstruction} Sé conciso pero completo en tus respuestas.`,
+      content: `Eres ZerOne, un asistente de inteligencia artificial avanzado, inteligente y preciso. ${langInstruction} Sé conciso pero completo en tus respuestas.`,
     },
     ...previousMessages.map((m) => ({
       role: m.role as "user" | "assistant",
@@ -81,6 +83,30 @@ router.post("/conversations/:conversationId/messages", async (req, res): Promise
   await db.update(onyxConversationsTable)
     .set({ lastMessageAt: new Date() })
     .where(eq(onyxConversationsTable.id, conv.id));
+
+  // Auto-generate a short title from the first message using AI
+  if (isFirstMessage) {
+    try {
+      const titleCompletion = await openai.chat.completions.create({
+        model: AI_MODEL,
+        max_completion_tokens: 12,
+        messages: [
+          {
+            role: "user",
+            content: `Genera un título muy corto (máximo 5 palabras, sin comillas, sin punto al final) para una conversación que empieza con: "${parsed.data.content.slice(0, 200)}"`,
+          },
+        ],
+      });
+      const autoTitle = titleCompletion.choices[0]?.message?.content?.trim();
+      if (autoTitle) {
+        await db.update(onyxConversationsTable)
+          .set({ title: autoTitle })
+          .where(eq(onyxConversationsTable.id, conv.id));
+      }
+    } catch {
+      // Title generation is optional — ignore errors
+    }
+  }
 
   res.json({
     userMessage: {

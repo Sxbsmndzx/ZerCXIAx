@@ -68,7 +68,7 @@ export default function SettingsPage() {
         <div className="max-w-2xl mx-auto px-4 py-8 md:px-8 space-y-8">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">{t("configuration")}</h1>
-            <p className="text-muted-foreground text-sm mt-1">Administra tus preferencias de Onyx.</p>
+            <p className="text-muted-foreground text-sm mt-1">Administra tus preferencias de ZerOne.</p>
           </div>
 
           {/* Profile Summary */}

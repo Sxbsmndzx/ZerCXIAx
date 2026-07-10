@@ -61,9 +61,8 @@ export default function ChatPage() {
 
         {/* Content */}
         <div className="flex-1 flex flex-col items-center justify-center p-6 max-w-3xl mx-auto w-full text-center relative z-10">
-          {/* Logo — lotus + crosses */}
           <div className="mb-8 flex flex-col items-center">
-            <OnyxLogo size="xl" />
+            <OnyxLogo className="w-36 h-36" />
           </div>
 
           <h2 className="text-2xl font-semibold mb-1">{t("helpText")}</h2>
