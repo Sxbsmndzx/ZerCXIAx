@@ -1,3 +1,4 @@
+// PÁGINA DE INICIO DE SESIÓN
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useForm } from "react-hook-form";
@@ -20,6 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "../hooks/useTranslation";
+import { Eye, EyeOff } from "lucide-react";
 
 const loginSchema = z.object({
   email: z.string().email("Correo electrónico inválido"),
@@ -32,6 +34,8 @@ export default function LoginPage() {
   const { toast } = useToast();
   const { t } = useTranslation();
   const [rememberMe, setRememberMe] = useState(true);
+  // Controla si la contraseña se muestra o se oculta
+  const [mostrarContrasena, setMostrarContrasena] = useState(false);
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -63,7 +67,6 @@ export default function LoginPage() {
       <AnimatedBackground />
 
       <div className="w-full max-w-md space-y-8 relative z-10">
-        {/* Logo + header */}
         <div className="flex flex-col items-center text-center">
           <div className="mb-6 flex items-center justify-center">
             <OnyxLogo className="w-24 h-24" />
@@ -72,7 +75,6 @@ export default function LoginPage() {
           <p className="text-muted-foreground mt-2">{t("loginSubtitle")}</p>
         </div>
 
-        {/* Card */}
         <div className="bg-card/80 backdrop-blur-xl border border-border/60 rounded-2xl p-8 shadow-xl shadow-black/20">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
@@ -103,21 +105,34 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel>{t("passwordLabel")}</FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="••••••••"
-                        {...field}
-                        disabled={loginMutation.isPending}
-                        className="bg-background/50"
-                        autoComplete="current-password"
-                      />
+                      {/* Campo de contraseña con ojito para mostrar/ocultar */}
+                      <div className="relative">
+                        <Input
+                          type={mostrarContrasena ? "text" : "password"}
+                          placeholder="••••••••"
+                          {...field}
+                          disabled={loginMutation.isPending}
+                          className="bg-background/50 pr-10"
+                          autoComplete="current-password"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setMostrarContrasena(!mostrarContrasena)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                          tabIndex={-1}
+                        >
+                          {mostrarContrasena
+                            ? <EyeOff className="w-4 h-4" />
+                            : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              {/* Remember Me */}
+              {/* Mantener sesión iniciada */}
               <div className="flex items-center gap-2.5">
                 <Checkbox
                   id="remember-me"

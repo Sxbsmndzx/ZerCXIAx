@@ -1,3 +1,5 @@
+// PÁGINA DE REGISTRO / CREAR CUENTA
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,6 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "../hooks/useTranslation";
+import { Eye, EyeOff } from "lucide-react";
 
 const registerSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
@@ -30,6 +33,8 @@ export default function RegisterPage() {
   const { login } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation();
+  // Controla si la contraseña se muestra o se oculta
+  const [mostrarContrasena, setMostrarContrasena] = useState(false);
 
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
@@ -61,7 +66,6 @@ export default function RegisterPage() {
       <AnimatedBackground />
 
       <div className="w-full max-w-md space-y-8 relative z-10">
-        {/* Logo + header */}
         <div className="flex flex-col items-center text-center">
           <div className="mb-6 flex items-center justify-center">
             <OnyxLogo className="w-24 h-24" />
@@ -70,7 +74,6 @@ export default function RegisterPage() {
           <p className="text-muted-foreground mt-2">{t("joinOnyx")}</p>
         </div>
 
-        {/* Card */}
         <div className="bg-card/80 backdrop-blur-xl border border-border/60 rounded-2xl p-8 shadow-xl shadow-black/20">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
@@ -120,14 +123,27 @@ export default function RegisterPage() {
                   <FormItem>
                     <FormLabel>{t("passwordLabel")}</FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="Mínimo 6 caracteres"
-                        {...field}
-                        disabled={registerMutation.isPending}
-                        className="bg-background/50"
-                        autoComplete="new-password"
-                      />
+                      {/* Campo de contraseña con ojito para mostrar/ocultar */}
+                      <div className="relative">
+                        <Input
+                          type={mostrarContrasena ? "text" : "password"}
+                          placeholder="Mínimo 6 caracteres"
+                          {...field}
+                          disabled={registerMutation.isPending}
+                          className="bg-background/50 pr-10"
+                          autoComplete="new-password"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setMostrarContrasena(!mostrarContrasena)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                          tabIndex={-1}
+                        >
+                          {mostrarContrasena
+                            ? <EyeOff className="w-4 h-4" />
+                            : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>

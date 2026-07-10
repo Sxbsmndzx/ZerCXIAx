@@ -6,7 +6,6 @@ import { ThemeSelector } from "../components/settings/ThemeSelector";
 import { AccentColorPicker } from "../components/settings/AccentColorPicker";
 import { LanguageSelector } from "../components/settings/LanguageSelector";
 import { UserAvatarBadge } from "../components/common/UserAvatarBadge";
-import { ReportErrorDialog } from "../components/common/ReportErrorDialog";
 import { SecurityDialog } from "../components/common/SecurityDialog";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -18,7 +17,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { LogOut, Shield, Mic, Database, AlertTriangle, FileText, ChevronRight, Crown, Flag } from "lucide-react";
+import { LogOut, Shield, Mic, Database, FileText, ChevronRight, Crown, Flag } from "lucide-react";
 import { useLogoutUser, useUpdateSettings, useGetSettings } from "@workspace/api-client-react";
 import { useLocation, Link } from "wouter";
 import { useTranslation } from "../hooks/useTranslation";
@@ -26,13 +25,11 @@ import { useTranslation } from "../hooks/useTranslation";
 export default function SettingsPage() {
   const { user, logout } = useAuth();
   const [, setLocation] = useLocation();
-  const [reportOpen, setReportOpen] = useState(false);
   const [securityOpen, setSecurityOpen] = useState(false);
   const [premiumOpen, setPremiumOpen] = useState(false);
   const { t } = useTranslation();
   useAuthGuard();
 
-  // Local state for toggles (prevents flash)
   const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [dataEnabled, setDataEnabled] = useState(true);
   const [settingsLoaded, setSettingsLoaded] = useState(false);
@@ -47,7 +44,6 @@ export default function SettingsPage() {
     query: { enabled: !!user, queryKey: ["/api/settings"] },
   });
 
-  // Sync local state when settings load
   useEffect(() => {
     if (settings && !settingsLoaded) {
       setVoiceEnabled(settings.voiceModeEnabled ?? false);
@@ -79,7 +75,7 @@ export default function SettingsPage() {
             <p className="text-muted-foreground text-sm mt-1">Administra tus preferencias de ZerCX AI.</p>
           </div>
 
-          {/* Profile Summary */}
+          {/* Resumen de perfil */}
           <div className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border">
             <UserAvatarBadge user={user} className="w-14 h-14 text-base border-2 border-primary/20 flex-shrink-0" />
             <div className="flex-1 min-w-0">
@@ -122,7 +118,7 @@ export default function SettingsPage() {
             </div>
           </section>
 
-          {/* Plan Premium — Próximamente */}
+          {/* Plan Premium */}
           <section className="space-y-3">
             <h3 className="text-base font-semibold border-b border-border pb-2">Plan</h3>
             <button
@@ -133,7 +129,6 @@ export default function SettingsPage() {
                 borderColor: "hsl(45 100% 60% / 0.4)",
               }}
             >
-              {/* Brillo decorativo */}
               <div
                 className="absolute top-0 right-0 w-32 h-32 rounded-full blur-[60px] pointer-events-none opacity-30"
                 style={{ background: "hsl(45 100% 60%)" }}
@@ -169,7 +164,6 @@ export default function SettingsPage() {
           {/* Privacidad */}
           <section className="space-y-4">
             <h3 className="text-base font-semibold border-b border-border pb-2">{t("privacy")}</h3>
-
             <div className="flex items-center justify-between gap-4 py-1">
               <div className="flex-1 min-w-0">
                 <Label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
@@ -208,7 +202,6 @@ export default function SettingsPage() {
           <section className="space-y-3">
             <h3 className="text-base font-semibold border-b border-border pb-2">{t("support")}</h3>
 
-            {/* Enlace al panel de reportes (admin) */}
             <Link href="/admin/reportes">
               <button className="w-full flex items-center gap-3 p-4 rounded-xl bg-card border border-border hover:bg-secondary/50 transition-colors text-left">
                 <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -221,20 +214,6 @@ export default function SettingsPage() {
                 <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
               </button>
             </Link>
-
-            <button
-              onClick={() => setReportOpen(true)}
-              className="w-full flex items-center gap-3 p-4 rounded-xl bg-card border border-border hover:bg-secondary/50 transition-colors text-left"
-            >
-              <div className="w-9 h-9 rounded-lg bg-destructive/10 flex items-center justify-center flex-shrink-0">
-                <AlertTriangle className="w-4 h-4 text-destructive" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium">{t("reportError")}</div>
-                <div className="text-xs text-muted-foreground">{t("reportErrorDesc")}</div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-            </button>
 
             <Link href="/terminos">
               <button className="w-full flex items-center gap-3 p-4 rounded-xl bg-card border border-border hover:bg-secondary/50 transition-colors text-left">
@@ -250,7 +229,7 @@ export default function SettingsPage() {
             </Link>
           </section>
 
-          {/* Logout */}
+          {/* Cerrar sesión */}
           <div className="pb-8">
             <Button
               variant="destructive"
@@ -265,10 +244,9 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <ReportErrorDialog open={reportOpen} onOpenChange={setReportOpen} />
       <SecurityDialog open={securityOpen} onOpenChange={setSecurityOpen} />
 
-      {/* Diálogo Plan Premium — Coming Soon */}
+      {/* Diálogo Plan Premium */}
       <Dialog open={premiumOpen} onOpenChange={setPremiumOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -281,7 +259,6 @@ export default function SettingsPage() {
             </DialogDescription>
           </DialogHeader>
 
-          {/* Banner Coming Soon */}
           <div
             className="rounded-2xl p-6 text-center space-y-3 my-2"
             style={{
@@ -289,10 +266,7 @@ export default function SettingsPage() {
               border: "1px solid hsl(45 100% 60% / 0.3)",
             }}
           >
-            <div
-              className="text-4xl font-black tracking-tight"
-              style={{ color: "hsl(45 100% 60%)" }}
-            >
+            <div className="text-4xl font-black tracking-tight" style={{ color: "hsl(45 100% 60%)" }}>
               Próximamente
             </div>
             <div
@@ -308,7 +282,6 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Lista de beneficios */}
           <div className="space-y-2.5 py-1">
             {[
               { emoji: "⚡", titulo: "Respuestas ultra-rápidas", desc: "Prioridad máxima en el servidor" },
