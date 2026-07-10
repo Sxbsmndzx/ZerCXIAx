@@ -85,7 +85,7 @@ export function ChatSidebar({ onClose }: ChatSidebarProps) {
           <Link href="/chat" onClick={onClose}>
             <div className="flex items-center gap-2 font-semibold text-lg cursor-pointer hover:opacity-80 transition-opacity">
               <OnyxLogo className="w-6 h-6 text-primary" />
-              <span>Onyx</span>
+              <span>ZerCX</span>
             </div>
           </Link>
           {onClose && (
