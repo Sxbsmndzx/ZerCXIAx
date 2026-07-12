@@ -1,11 +1,9 @@
-// PÁGINA DE REGISTRO / CREAR CUENTA
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useRegisterUser } from "@workspace/api-client-react";
-import { useAuth } from "../contexts/AuthContext";
+import { supabase } from "../lib/supabase";
 import { OnyxLogo } from "../components/common/OnyxLogo";
 import { AnimatedBackground } from "../components/common/AnimatedBackground";
 import { Button } from "@/components/ui/button";
@@ -30,36 +28,73 @@ const registerSchema = z.object({
 
 export default function RegisterPage() {
   const [, setLocation] = useLocation();
-  const { login } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation();
-  // Controla si la contraseña se muestra o se oculta
   const [mostrarContrasena, setMostrarContrasena] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
 
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
     defaultValues: { name: "", email: "", password: "" },
   });
 
-  const registerMutation = useRegisterUser({
-    mutation: {
-      onSuccess: (data) => {
-        login(data.token, data.user);
-        setLocation("/chat");
-      },
-      onError: (error) => {
-        toast({
-          variant: "destructive",
-          title: t("errorTitle"),
-          description: (error as any).data?.error || "Ocurrió un error. Por favor, intenta de nuevo.",
-        });
-      },
-    },
-  });
+  const onSubmit = async (values: z.infer<typeof registerSchema>) => {
+    setIsLoading(true);
 
-  const onSubmit = (values: z.infer<typeof registerSchema>) => {
-    registerMutation.mutate({ data: values });
+    const { data, error } = await supabase.auth.signUp({
+      email: values.email,
+      password: values.password,
+      options: {
+        data: { name: values.name },
+      },
+    });
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: t("errorTitle"),
+        description:
+          error.message === "User already registered"
+            ? "Este correo ya está registrado. Intenta iniciar sesión."
+            : error.message,
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    if (data.session) {
+      setLocation("/chat");
+    } else {
+      setEmailSent(true);
+      setIsLoading(false);
+    }
   };
+
+  if (emailSent) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
+        <AnimatedBackground />
+        <div className="w-full max-w-md space-y-8 relative z-10 text-center">
+          <div className="mb-6 flex items-center justify-center">
+            <OnyxLogo className="w-24 h-24" />
+          </div>
+          <div className="bg-card/80 backdrop-blur-xl border border-border/60 rounded-2xl p-8 shadow-xl shadow-black/20 space-y-4">
+            <div className="text-4xl">📧</div>
+            <h2 className="text-xl font-bold">Confirma tu correo</h2>
+            <p className="text-muted-foreground text-sm">
+              Te enviamos un enlace de confirmación a{" "}
+              <span className="text-foreground font-medium">{form.getValues("email")}</span>.
+              Ábrelo para activar tu cuenta y luego inicia sesión.
+            </p>
+            <Link href="/" className="text-primary hover:underline text-sm font-medium block mt-4">
+              Volver al inicio de sesión →
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
@@ -87,7 +122,7 @@ export default function RegisterPage() {
                       <Input
                         placeholder="Tu nombre"
                         {...field}
-                        disabled={registerMutation.isPending}
+                        disabled={isLoading}
                         className="bg-background/50"
                         autoComplete="name"
                       />
@@ -107,7 +142,7 @@ export default function RegisterPage() {
                         placeholder="tu@email.com"
                         type="email"
                         {...field}
-                        disabled={registerMutation.isPending}
+                        disabled={isLoading}
                         className="bg-background/50"
                         autoComplete="email"
                       />
@@ -123,13 +158,12 @@ export default function RegisterPage() {
                   <FormItem>
                     <FormLabel>{t("passwordLabel")}</FormLabel>
                     <FormControl>
-                      {/* Campo de contraseña con ojito para mostrar/ocultar */}
                       <div className="relative">
                         <Input
                           type={mostrarContrasena ? "text" : "password"}
                           placeholder="Mínimo 6 caracteres"
                           {...field}
-                          disabled={registerMutation.isPending}
+                          disabled={isLoading}
                           className="bg-background/50 pr-10"
                           autoComplete="new-password"
                         />
@@ -152,9 +186,9 @@ export default function RegisterPage() {
               <Button
                 type="submit"
                 className="w-full h-11 text-base font-medium shadow-[0_0_20px_hsl(var(--primary)/0.3)]"
-                disabled={registerMutation.isPending}
+                disabled={isLoading}
               >
-                {registerMutation.isPending ? (
+                {isLoading ? (
                   <span className="flex items-center gap-2">
                     <span className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
                     {t("creatingAccount")}

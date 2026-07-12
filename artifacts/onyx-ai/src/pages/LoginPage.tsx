@@ -1,11 +1,9 @@
-// PÁGINA DE INICIO DE SESIÓN
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useLoginUser } from "@workspace/api-client-react";
-import { useAuth } from "../contexts/AuthContext";
+import { supabase } from "../lib/supabase";
 import { OnyxLogo } from "../components/common/OnyxLogo";
 import { AnimatedBackground } from "../components/common/AnimatedBackground";
 import { Button } from "@/components/ui/button";
@@ -30,36 +28,39 @@ const loginSchema = z.object({
 
 export default function LoginPage() {
   const [, setLocation] = useLocation();
-  const { login } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation();
   const [rememberMe, setRememberMe] = useState(true);
-  // Controla si la contraseña se muestra o se oculta
   const [mostrarContrasena, setMostrarContrasena] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
   });
 
-  const loginMutation = useLoginUser({
-    mutation: {
-      onSuccess: (data) => {
-        login(data.token, data.user, rememberMe);
-        setLocation("/chat");
-      },
-      onError: (error) => {
-        toast({
-          variant: "destructive",
-          title: t("errorTitle"),
-          description: (error as any).data?.error || "Credenciales inválidas.",
-        });
-      },
-    },
-  });
+  const onSubmit = async (values: z.infer<typeof loginSchema>) => {
+    setIsLoading(true);
 
-  const onSubmit = (values: z.infer<typeof loginSchema>) => {
-    loginMutation.mutate({ data: values });
+    const { error } = await supabase.auth.signInWithPassword({
+      email: values.email,
+      password: values.password,
+    });
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: t("errorTitle"),
+        description:
+          error.message === "Invalid login credentials"
+            ? "Correo o contraseña incorrectos."
+            : error.message,
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    setLocation("/chat");
   };
 
   return (
@@ -89,7 +90,7 @@ export default function LoginPage() {
                         placeholder="tu@email.com"
                         type="email"
                         {...field}
-                        disabled={loginMutation.isPending}
+                        disabled={isLoading}
                         className="bg-background/50"
                         autoComplete="email"
                       />
@@ -105,13 +106,12 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel>{t("passwordLabel")}</FormLabel>
                     <FormControl>
-                      {/* Campo de contraseña con ojito para mostrar/ocultar */}
                       <div className="relative">
                         <Input
                           type={mostrarContrasena ? "text" : "password"}
                           placeholder="••••••••"
                           {...field}
-                          disabled={loginMutation.isPending}
+                          disabled={isLoading}
                           className="bg-background/50 pr-10"
                           autoComplete="current-password"
                         />
@@ -132,13 +132,12 @@ export default function LoginPage() {
                 )}
               />
 
-              {/* Mantener sesión iniciada */}
               <div className="flex items-center gap-2.5">
                 <Checkbox
                   id="remember-me"
                   checked={rememberMe}
                   onCheckedChange={(checked) => setRememberMe(checked === true)}
-                  disabled={loginMutation.isPending}
+                  disabled={isLoading}
                 />
                 <label
                   htmlFor="remember-me"
@@ -151,9 +150,9 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 className="w-full h-11 text-base font-medium shadow-[0_0_20px_hsl(var(--primary)/0.3)]"
-                disabled={loginMutation.isPending}
+                disabled={isLoading}
               >
-                {loginMutation.isPending ? (
+                {isLoading ? (
                   <span className="flex items-center gap-2">
                     <span className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
                     {t("loggingIn")}

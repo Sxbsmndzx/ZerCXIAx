@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import type { Session } from "@supabase/supabase-js";
 import { User } from "@workspace/api-client-react";
-import { useGetCurrentUser } from "@workspace/api-client-react";
+import { useGetCurrentUser, setAuthTokenGetter } from "@workspace/api-client-react";
+import { supabase } from "../lib/supabase";
 
 interface AuthContextType {
   user: User | null;
@@ -10,45 +12,52 @@ interface AuthContextType {
   updateUser: (user: User) => void;
 }
 
-const AUTH_KEY = "onyx_token";
-
-function getStoredToken(): string | null {
-  return localStorage.getItem(AUTH_KEY) || sessionStorage.getItem(AUTH_KEY);
-}
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [token, setToken] = useState<string | null>(getStoredToken);
+  const [session, setSession] = useState<Session | null>(null);
+  const [sessionLoading, setSessionLoading] = useState(true);
 
-  const { data: user, isLoading, refetch } = useGetCurrentUser({
+  useEffect(() => {
+    setAuthTokenGetter(async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      return session?.access_token ?? null;
+    });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setSessionLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession);
+      setSessionLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const { data: user, isLoading: userLoading, refetch } = useGetCurrentUser({
     query: {
-      enabled: !!token,
-      queryKey: ["/api/auth/me"],
+      enabled: !!session,
+      queryKey: ["/api/auth/me", session?.user?.id],
     },
   });
 
-  const login = (newToken: string, newUser: User, rememberMe = true) => {
-    if (rememberMe) {
-      localStorage.setItem(AUTH_KEY, newToken);
-      sessionStorage.removeItem(AUTH_KEY);
-    } else {
-      sessionStorage.setItem(AUTH_KEY, newToken);
-      localStorage.removeItem(AUTH_KEY);
-    }
-    setToken(newToken);
+  const login = (_token: string, _user: User, _rememberMe?: boolean) => {
     refetch();
   };
 
-  const logout = () => {
-    localStorage.removeItem(AUTH_KEY);
-    sessionStorage.removeItem(AUTH_KEY);
-    setToken(null);
+  const logout = async () => {
+    await supabase.auth.signOut();
+    setSession(null);
   };
 
   const updateUser = (_user: User) => {
     refetch();
   };
+
+  const isLoading = sessionLoading || (!!session && userLoading);
 
   return (
     <AuthContext.Provider value={{ user: user || null, isLoading, login, logout, updateUser }}>
