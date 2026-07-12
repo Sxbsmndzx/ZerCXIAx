@@ -232,3 +232,129 @@
 .animate-logo-glow {
   animation: logo-glow 3s ease-in-out infinite;
 }
+
+/* ═══════════════════════════════════════════════
+   iOS-STYLE ANIMATIONS & INTERACTIONS
+   Spring easing: cubic-bezier(0.34, 1.56, 0.64, 1)
+   ═══════════════════════════════════════════════ */
+
+/* Message bubble entrance — slide up + slight scale */
+@keyframes msg-in {
+  from { opacity: 0; transform: translateY(16px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+/* Page entrance — gentle fade + lift */
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Chip / badge pop — spring bounce */
+@keyframes chip-in {
+  from { opacity: 0; transform: scale(0.72) translateY(8px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0); }
+}
+
+/* Logo entrance bounce */
+@keyframes logo-in {
+  0%   { opacity: 0; transform: scale(0.5) translateY(20px); }
+  60%  { opacity: 1; transform: scale(1.08) translateY(-4px); }
+  80%  { transform: scale(0.97); }
+  100% { transform: scale(1) translateY(0); }
+}
+
+/* Sidebar items glide in from left */
+@keyframes sidebar-in {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Typing bubble entrance */
+@keyframes typing-in {
+  from { opacity: 0; transform: translateX(-10px) scale(0.9); }
+  to   { opacity: 1; transform: translateX(0)     scale(1); }
+}
+
+/* Send button micro-bounce on send */
+@keyframes send-bounce {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(0.85); }
+  65%  { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+/* Greeting text slide in */
+@keyframes text-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Animation utility classes ─── */
+.animate-msg-in     { animation: msg-in     0.40s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.animate-page-in    { animation: page-in    0.45s cubic-bezier(0, 0, 0.2, 1) both; }
+.animate-chip-in    { animation: chip-in    0.42s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.animate-logo-in    { animation: logo-in    0.65s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.animate-sidebar-in { animation: sidebar-in 0.30s cubic-bezier(0, 0, 0.2, 1) both; }
+.animate-typing-in  { animation: typing-in  0.30s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.animate-text-in    { animation: text-in    0.40s cubic-bezier(0, 0, 0.2, 1) both; }
+.animate-send-bounce { animation: send-bounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+/* ─── iOS tap feedback — scale on active ─── */
+button,
+[role="button"] {
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 0.13s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.2s ease,
+    background-color 0.15s ease,
+    opacity 0.15s ease;
+}
+button:active,
+[role="button"]:active {
+  transform: scale(0.93);
+}
+/* Exception: inputs and textareas should not scale */
+input:active, textarea:active {
+  transform: none;
+}
+
+/* ─── iOS-style slim scrollbar ─── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--border) / 0.4) transparent;
+}
+*::-webkit-scrollbar { width: 3px; height: 3px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: hsl(var(--border) / 0.4);
+  border-radius: 999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--border) / 0.7);
+}
+
+/* ─── iOS momentum scrolling ─── */
+.overflow-y-auto,
+.overflow-x-auto,
+.overflow-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ─── Glassmorphism utility ─── */
+.glass-panel {
+  background: hsl(var(--card) / 0.65);
+  backdrop-filter: blur(28px) saturate(1.9);
+  -webkit-backdrop-filter: blur(28px) saturate(1.9);
+}
+
+/* ─── iOS-style focus ring ─── */
+.ios-focus {
+  transition: box-shadow 0.2s cubic-bezier(0, 0, 0.2, 1), border-color 0.2s ease;
+}
+.ios-focus:focus-within {
+  box-shadow:
+    0 0 0 3px hsl(var(--primary) / 0.18),
+    0 4px 24px hsl(var(--primary) / 0.12);
+  border-color: hsl(var(--primary) / 0.5);
+}

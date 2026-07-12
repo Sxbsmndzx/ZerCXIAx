@@ -107,8 +107,8 @@ export default function ConversationPage() {
                 <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
               </div>
             ) : hayMensajes ? (
-              conversation.messages.map((msg) => (
-                <ChatMessageBubble key={msg.id} message={msg} />
+              conversation.messages.map((msg, idx) => (
+                <ChatMessageBubble key={msg.id} message={msg} index={idx} />
               ))
             ) : mensajeOptimista ? (
               // Mensaje optimista: aparece inmediatamente mientras el servidor procesa
