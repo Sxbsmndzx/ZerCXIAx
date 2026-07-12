@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "BCjPEcmGWCoCTeCScjIPA"
+uri = "file://zercx-ai-netlify.zip"
+type = "unspecified"
+title = "ZerCX AI — Carpeta para Netlify (1.9 MB)"

@@ -1,0 +1,50 @@
+# ═══════════════════════════════════════════════════════
+# ZerCX AI — Configuración de Netlify
+# ═══════════════════════════════════════════════════════
+# Opción A: Conectar el repositorio directamente a Netlify
+# (Netlify construye el frontend automáticamente con este archivo)
+#
+# Opción B: Subir la carpeta dist/public manualmente
+# (usa el archivo _redirects que ya está dentro de esa carpeta)
+# ═══════════════════════════════════════════════════════
+
+[build]
+  # Comando de build para el frontend
+  command = "npm install -g pnpm && pnpm install && PORT=3000 BASE_PATH=/ NODE_ENV=production pnpm --filter @workspace/onyx-ai run build"
+  # Carpeta de salida que Netlify sirve
+  publish = "artifacts/onyx-ai/dist/public"
+
+# Variables de entorno necesarias en el panel de Netlify:
+#   DATABASE_URL        → URL de tu base de datos PostgreSQL (ej: Neon)
+#   OPENAI_API_KEY      → Tu clave de API de OpenRouter/OpenAI
+#   SESSION_SECRET      → Cadena aleatoria para las sesiones
+
+# ─── Proxy de API al backend ───────────────────────────
+# Descomenta esto cuando tengas el backend desplegado en Railway/Render.
+# Reemplaza YOUR-BACKEND-URL con tu URL real.
+#
+# [[redirects]]
+#   from   = "/api/*"
+#   to     = "https://YOUR-BACKEND-URL.railway.app/api/:splat"
+#   status = 200
+#   force  = true
+
+# ─── SPA fallback (wouter / React Router) ──────────────
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200
+
+# ─── Cabeceras de seguridad ────────────────────────────
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options        = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy        = "strict-origin-when-cross-origin"
+    Permissions-Policy     = "camera=(), microphone=(self), geolocation=()"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
