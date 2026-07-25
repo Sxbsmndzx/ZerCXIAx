@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
+import { useAuth } from "../contexts/AuthContext";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -34,6 +35,12 @@ export default function LoginPage() {
   const [mostrarContrasena, setMostrarContrasena] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Redirect once AuthContext confirms the user is logged in
+  const { user } = useAuth();
+  useEffect(() => {
+    if (user) setLocation("/chat");
+  }, [user, setLocation]);
+
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
@@ -54,13 +61,14 @@ export default function LoginPage() {
         description:
           error.message === "Invalid login credentials"
             ? "Correo o contraseña incorrectos."
+            : error.message === "Email not confirmed"
+            ? "Debes confirmar tu correo antes de iniciar sesión. Revisa tu bandeja de entrada."
             : error.message,
       });
       setIsLoading(false);
       return;
     }
-
-    setLocation("/chat");
+    // Navigation is handled by the useEffect above once AuthContext confirms the session
   };
 
   return (

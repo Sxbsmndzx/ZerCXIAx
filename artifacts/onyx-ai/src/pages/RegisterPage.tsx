@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
+import { useAuth } from "../contexts/AuthContext";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -34,6 +35,12 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
 
+  // Redirect once AuthContext confirms the user is logged in
+  const { user } = useAuth();
+  useEffect(() => {
+    if (user) setLocation("/chat");
+  }, [user, setLocation]);
+
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
     defaultValues: { name: "", email: "", password: "" },
@@ -64,7 +71,7 @@ export default function RegisterPage() {
     }
 
     if (data.session) {
-      setLocation("/chat");
+      // Navigation is handled by the useEffect above once AuthContext confirms the session
     } else {
       setEmailSent(true);
       setIsLoading(false);

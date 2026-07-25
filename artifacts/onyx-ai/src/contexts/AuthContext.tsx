@@ -19,16 +19,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [sessionLoading, setSessionLoading] = useState(true);
 
   useEffect(() => {
+    // Set token getter once — always reads the latest session from Supabase
     setAuthTokenGetter(async () => {
       const { data: { session } } = await supabase.auth.getSession();
       return session?.access_token ?? null;
     });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setSessionLoading(false);
-    });
-
+    // onAuthStateChange fires immediately with INITIAL_SESSION, so we don't
+    // need a separate getSession() call. Using only one source of truth avoids
+    // the race where getSession() resolves (session=null, loading=false) a few
+    // ms before the listener fires with the real session, which caused the
+    // auth guard to briefly see user=null and redirect back to login.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
       setSessionLoading(false);
