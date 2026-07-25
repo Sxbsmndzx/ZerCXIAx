@@ -34,5 +34,5 @@ externalPort = 3001
 [userenv]
 
 [userenv.shared]
-SUPABASE_URL = "https://miomerhrmalyszkurnow.supabase.co"
-VITE_SUPABASE_URL = "https://miomerhrmalyszkurnow.supabase.co"
+SUPABASE_URL = "https://kmjqzrpuudunmxxnhzfr.supabase.co"
+VITE_SUPABASE_URL = "https://kmjqzrpuudunmxxnhzfr.supabase.co"
