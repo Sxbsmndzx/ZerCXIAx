@@ -18,7 +18,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { LogOut, Shield, Mic, Database, FileText, ChevronRight, Crown, Flag } from "lucide-react";
+import { LogOut, Shield, Mic, Database, FileText, ChevronRight, Crown, AlertTriangle } from "lucide-react";
 import { useLogoutUser, useUpdateSettings, useGetSettings } from "@workspace/api-client-react";
 import { useLocation, Link } from "wouter";
 import { useTranslation } from "../hooks/useTranslation";
@@ -29,8 +29,6 @@ export default function SettingsPage() {
   const [reportOpen, setReportOpen] = useState(false);
   const [securityOpen, setSecurityOpen] = useState(false);
   const [premiumOpen, setPremiumOpen] = useState(false);
-  // Solo el administrador puede ver el Panel de Reportes
-  const esAdmin = user?.email === "mendezperezvladimir@gmail.com";
   const { t } = useTranslation();
   useAuthGuard();
 
@@ -206,18 +204,19 @@ export default function SettingsPage() {
           <section className="space-y-3">
             <h3 className="text-base font-semibold border-b border-border pb-2">{t("support")}</h3>
 
-            <Link href="/admin/reportes">
-              <button className="w-full flex items-center gap-3 p-4 rounded-xl bg-card border border-border hover:bg-secondary/50 transition-colors text-left">
-                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Flag className="w-4 h-4 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium">Panel de Reportes</div>
-                  <div className="text-xs text-muted-foreground">Ver reportes enviados por usuarios</div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-              </button>
-            </Link>
+            <button
+              onClick={() => setReportOpen(true)}
+              className="w-full flex items-center gap-3 p-4 rounded-xl bg-card border border-border hover:bg-destructive/5 hover:border-destructive/30 transition-colors text-left"
+            >
+              <div className="w-9 h-9 rounded-lg bg-destructive/10 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-4 h-4 text-destructive" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium">{t("reportError")}</div>
+                <div className="text-xs text-muted-foreground">Envíanos un reporte por correo</div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            </button>
 
             <Link href="/terminos">
               <button className="w-full flex items-center gap-3 p-4 rounded-xl bg-card border border-border hover:bg-secondary/50 transition-colors text-left">
@@ -249,6 +248,7 @@ export default function SettingsPage() {
       </div>
 
       <SecurityDialog open={securityOpen} onOpenChange={setSecurityOpen} />
+      <ReportErrorDialog open={reportOpen} onOpenChange={setReportOpen} />
 
       {/* Diálogo Plan Premium */}
       <Dialog open={premiumOpen} onOpenChange={setPremiumOpen}>

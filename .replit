@@ -36,3 +36,4 @@ externalPort = 3001
 [userenv.shared]
 SUPABASE_URL = "https://kmjqzrpuudunmxxnhzfr.supabase.co"
 VITE_SUPABASE_URL = "https://kmjqzrpuudunmxxnhzfr.supabase.co"
+VITE_API_BASE_URL = "https://onyx-core--migatitosusu.replit.app"
