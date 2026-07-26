@@ -47,3 +47,25 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Environment files — never commit real secrets
+.env
+.env.local
+.env.development
+.env.production
+.env.*.local
+# Allow the example template
+!.env.example
+
+# Build outputs (already tracked by dist rule above, explicit for clarity)
+artifacts/*/dist/
+artifacts/*/build/
+
+# pnpm store (if accidentally created inside repo)
+.pnpm-store/
+
+# Netlify CLI cache
+.netlify/
+
+# ZIP exports
+*.zip

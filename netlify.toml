@@ -1,49 +1,39 @@
-# ═══════════════════════════════════════════════════════
-# ZerCX AI — Configuración de Netlify
-# ═══════════════════════════════════════════════════════
-# Opción A: Conectar el repositorio directamente a Netlify
-# (Netlify construye el frontend automáticamente con este archivo)
-#
-# Opción B: Subir la carpeta dist/public manualmente
-# (usa el archivo _redirects que ya está dentro de esa carpeta)
-# ═══════════════════════════════════════════════════════
+# ─────────────────────────────────────────────────────────────────────────────
+# Netlify — ZerCX AI (frontend only)
+# Backend stays on Replit: https://onyx-core--migatitosusu.replit.app
+# ─────────────────────────────────────────────────────────────────────────────
 
 [build]
-  # Comando de build para el frontend
-  command = "pnpm install && PORT=3000 BASE_PATH=/ NODE_ENV=production pnpm --filter @workspace/onyx-ai run build"
-  # Carpeta de salida que Netlify sirve
-  publish = "artifacts/onyx-ai/dist/public"
+  # Run from the repo root so pnpm workspace packages resolve correctly
+  command   = "npm install -g pnpm && pnpm install --frozen-lockfile && pnpm --filter @workspace/onyx-ai run build"
+  publish   = "artifacts/onyx-ai/dist/public"
 
-# Variables de entorno necesarias en el panel de Netlify:
-#   DATABASE_URL        → URL de tu base de datos PostgreSQL (ej: Neon)
-#   OPENAI_API_KEY      → Tu clave de API de OpenRouter/OpenAI
-#   SESSION_SECRET      → Cadena aleatoria para las sesiones
+[build.environment]
+  NODE_VERSION  = "20"
+  # PORT is not used during `vite build`, but kept here to avoid any startup guard
+  PORT          = "3000"
+  # BASE_PATH defaults to "/" in vite.config.ts; set explicitly for clarity
+  BASE_PATH     = "/"
+  # Supabase + API — set real values in Netlify dashboard → Site settings → Env vars
+  # VITE_SUPABASE_URL     = set in Netlify dashboard
+  # VITE_SUPABASE_ANON_KEY = set in Netlify dashboard (safe — it's the public anon key)
+  # VITE_API_BASE_URL     = https://onyx-core--migatitosusu.replit.app
 
-# ─── Proxy de API al backend ───────────────────────────
-# Descomenta esto cuando tengas el backend desplegado en Railway/Render.
-# Reemplaza YOUR-BACKEND-URL con tu URL real.
-#
-# [[redirects]]
-#   from   = "/api/*"
-#   to     = "https://YOUR-BACKEND-URL.railway.app/api/:splat"
-#   status = 200
-#   force  = true
-
-# ─── SPA fallback (wouter / React Router) ──────────────
+# SPA fallback — all routes served by index.html
 [[redirects]]
   from   = "/*"
   to     = "/index.html"
   status = 200
 
-# ─── Cabeceras de seguridad ────────────────────────────
+# Security headers
 [[headers]]
   for = "/*"
   [headers.values]
     X-Frame-Options        = "DENY"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy        = "strict-origin-when-cross-origin"
-    Permissions-Policy     = "camera=(), microphone=(self), geolocation=()"
 
+# Cache static assets aggressively
 [[headers]]
   for = "/assets/*"
   [headers.values]

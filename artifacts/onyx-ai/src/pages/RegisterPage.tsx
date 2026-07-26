@@ -71,7 +71,9 @@ export default function RegisterPage() {
     }
 
     if (data.session) {
-      // Navigation is handled by the useEffect above once AuthContext confirms the session
+      // Supabase created a session immediately (email confirmation disabled).
+      // Release spinner — navigation fires via useEffect when AuthContext gets the user.
+      setIsLoading(false);
     } else {
       setEmailSent(true);
       setIsLoading(false);

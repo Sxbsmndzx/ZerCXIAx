@@ -68,7 +68,10 @@ export default function LoginPage() {
       setIsLoading(false);
       return;
     }
-    // Navigation is handled by the useEffect above once AuthContext confirms the session
+
+    // Supabase OK — release the spinner. Navigation happens via useEffect when
+    // AuthContext confirms the session (onAuthStateChange → /api/auth/me → user set).
+    setIsLoading(false);
   };
 
   return (
