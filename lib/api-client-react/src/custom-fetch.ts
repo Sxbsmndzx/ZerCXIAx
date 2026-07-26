@@ -372,5 +372,23 @@ export async function customFetch<T = unknown>(
     throw new ApiError(response, errorData, requestInfo);
   }
 
+  // A 2xx response with an HTML body for a request that expected structured
+  // data (json/text/blob inferred automatically) almost always means the
+  // request never reached the real API. The most common cause is a SPA
+  // host's catch-all rewrite (e.g. Netlify's `/* -> /index.html`) silently
+  // serving the app shell instead of a real 404 — for example when the API
+  // base URL isn't configured and a relative `/api/...` request lands back
+  // on the frontend's own origin. Treat that as a failure instead of
+  // returning the HTML markup as if it were valid data.
+  if (responseType === "auto" && !hasNoBody(response, method) && getMediaType(response.headers) === "text/html") {
+    const raw = await response.text();
+    throw new ResponseParseError(
+      response,
+      raw,
+      new Error("Expected JSON but received an HTML document — check that the API base URL is configured correctly."),
+      requestInfo,
+    );
+  }
+
   return (await parseSuccessBody(response, responseType, requestInfo)) as T;
 }

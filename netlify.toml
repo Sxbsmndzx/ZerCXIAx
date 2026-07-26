@@ -19,6 +19,16 @@
   # VITE_SUPABASE_ANON_KEY = set in Netlify dashboard (safe — it's the public anon key)
   # VITE_API_BASE_URL     = https://onyx-core--migatitosusu.replit.app
 
+# Guard rail: the backend lives on Replit (VITE_API_BASE_URL), so no request
+# should ever reach this site under /api/*. If one does (e.g. the env var is
+# missing for a deploy context), fail with a real 404 instead of letting the
+# SPA fallback below silently return index.html with a 200 status — that
+# masked failure is what previously crashed the app after login.
+[[redirects]]
+  from   = "/api/*"
+  to     = "/index.html"
+  status = 404
+
 # SPA fallback — all routes served by index.html
 [[redirects]]
   from   = "/*"
