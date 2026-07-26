@@ -84,20 +84,41 @@ export default function RegisterPage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
         <AnimatedBackground />
-        <div className="w-full max-w-md space-y-8 relative z-10 text-center">
-          <div className="mb-6 flex items-center justify-center">
-            <OnyxLogo className="w-24 h-24" />
+        <div className="w-full max-w-sm relative z-10">
+          {/* Icon badge */}
+          <div className="flex justify-center mb-8">
+            <div className="relative">
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center shadow-lg shadow-primary/10">
+                <svg className="w-7 h-7 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25H4.5a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5H4.5a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                </svg>
+              </div>
+              {/* Pulse ring */}
+              <span className="absolute inset-0 rounded-2xl border border-primary/30 animate-ping opacity-40" />
+            </div>
           </div>
-          <div className="bg-card/80 backdrop-blur-xl border border-border/60 rounded-2xl p-8 shadow-xl shadow-black/20 space-y-4">
-            <div className="text-4xl">📧</div>
-            <h2 className="text-xl font-bold">Confirma tu correo</h2>
-            <p className="text-muted-foreground text-sm">
-              Te enviamos un enlace de confirmación a{" "}
-              <span className="text-foreground font-medium">{form.getValues("email")}</span>.
-              Ábrelo para activar tu cuenta y luego inicia sesión.
+
+          {/* Card */}
+          <div className="bg-card/60 backdrop-blur-xl border border-border/50 rounded-2xl p-8 shadow-2xl shadow-black/20 text-center space-y-3">
+            <h2 className="text-xl font-semibold tracking-tight">Revisa tu correo</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Enviamos un enlace de activación a
             </p>
-            <Link href="/" className="text-primary hover:underline text-sm font-medium block mt-4">
-              Volver al inicio de sesión →
+            <p className="text-sm font-medium text-foreground bg-muted/50 rounded-lg px-3 py-2 break-all">
+              {form.getValues("email")}
+            </p>
+            <p className="text-xs text-muted-foreground pt-1">
+              Ábrelo y luego inicia sesión para acceder a tu cuenta.
+            </p>
+          </div>
+
+          {/* Footer link */}
+          <div className="text-center mt-6">
+            <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+              </svg>
+              Volver al inicio de sesión
             </Link>
           </div>
         </div>

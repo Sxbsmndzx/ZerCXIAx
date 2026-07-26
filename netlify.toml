@@ -5,7 +5,7 @@
 
 [build]
   # Run from the repo root so pnpm workspace packages resolve correctly
-  command   = "npm install -g pnpm && pnpm install --frozen-lockfile && pnpm --filter @workspace/onyx-ai run build"
+  command   = "pnpm install --frozen-lockfile && pnpm --filter @workspace/onyx-ai run build"
   publish   = "artifacts/onyx-ai/dist/public"
 
 [build.environment]
